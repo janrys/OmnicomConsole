@@ -4,6 +4,7 @@ namespace AngularCrudApi.Application.Interfaces
 {
     public interface IDateTimeService
     {
-        DateTime NowUtc { get; }
+        DateTime UtcNow { get; }
+        DateTime Now { get; }
     }
 }

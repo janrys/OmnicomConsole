@@ -3,6 +3,7 @@ using AngularCrudApi.Infrastructure.Persistence;
 using AngularCrudApi.Infrastructure.Persistence.Contexts;
 using AngularCrudApi.Infrastructure.Shared;
 using AngularCrudApi.WebApi.Extensions;
+using AngularCrudApi.WebApi.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

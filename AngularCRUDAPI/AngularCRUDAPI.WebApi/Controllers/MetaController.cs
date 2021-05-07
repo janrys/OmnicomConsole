@@ -1,10 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace AngularCrudApi.WebApi.Controllers
 {
     public class MetaController : BaseApiController
     {
+        public MetaController(IMediator mediator) : base(mediator)
+        {
+        }
+
         [HttpGet("/info")]
         public ActionResult<string> Info()
         {

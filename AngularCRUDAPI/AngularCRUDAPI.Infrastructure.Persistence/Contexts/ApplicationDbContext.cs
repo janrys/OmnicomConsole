@@ -33,11 +33,11 @@ namespace AngularCrudApi.Infrastructure.Persistence.Contexts
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        entry.Entity.Created = _dateTime.NowUtc;
+                        entry.Entity.Created = _dateTime.UtcNow;
                         break;
 
                     case EntityState.Modified:
-                        entry.Entity.LastModified = _dateTime.NowUtc;
+                        entry.Entity.LastModified = _dateTime.UtcNow;
                         break;
                 }
             }

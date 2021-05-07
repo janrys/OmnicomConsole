@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace AngularCrudApi.WebApi.Controllers
 {
@@ -8,7 +9,11 @@ namespace AngularCrudApi.WebApi.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     public abstract class BaseApiController : ControllerBase
     {
-        private IMediator _mediator;
-        protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>();
+        public BaseApiController(IMediator mediator)
+        {
+            this.Mediator = mediator ?? throw new System.ArgumentNullException(nameof(mediator));
+        }        
+
+        public IMediator Mediator { get; private set; }
     }
 }

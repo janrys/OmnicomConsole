@@ -3,6 +3,7 @@ using AngularCrudApi.Application.Features.Positions.Commands.DeletePositionById;
 using AngularCrudApi.Application.Features.Positions.Commands.UpdatePosition;
 using AngularCrudApi.Application.Features.Positions.Queries.GetPositionById;
 using AngularCrudApi.Application.Features.Positions.Queries.GetPositions;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -14,6 +15,10 @@ namespace AngularCrudApi.WebApi.Controllers.v1
     [ApiVersion("1.0")]
     public class PositionsController : BaseApiController
     {
+        public PositionsController(IMediator mediator) : base(mediator)
+        {
+        }
+
         /// <summary>
         /// GET: api/controller
         /// </summary>

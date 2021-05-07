@@ -1,4 +1,5 @@
 ﻿using AngularCrudApi.Application.Features.Employees.Queries.GetEmployees;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -9,6 +10,10 @@ namespace AngularCrudApi.WebApi.Controllers.v1
     [ApiVersion("1.0")]
     public class EmployeesController : BaseApiController
     {
+        public EmployeesController(IMediator mediator) : base(mediator)
+        {
+        }
+
         /// <summary>
         /// GET: api/controller
         /// </summary>

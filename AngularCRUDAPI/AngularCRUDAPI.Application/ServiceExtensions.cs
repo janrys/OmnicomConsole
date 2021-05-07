@@ -1,6 +1,6 @@
-﻿using AngularCrudApi.Application.Behaviours;
-using AngularCrudApi.Application.Helpers;
+﻿using AngularCrudApi.Application.Helpers;
 using AngularCrudApi.Application.Interfaces;
+using AngularCrudApi.Application.Pipeline;
 using AngularCrudApi.Domain.Entities;
 using FluentValidation;
 using MediatR;

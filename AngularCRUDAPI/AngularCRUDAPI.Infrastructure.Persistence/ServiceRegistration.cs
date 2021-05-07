@@ -3,6 +3,7 @@ using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Infrastructure.Persistence.Contexts;
 using AngularCrudApi.Infrastructure.Persistence.Repositories;
 using AngularCrudApi.Infrastructure.Persistence.Repository;
+using AngularCrudApi.Infrastructure.Persistence.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,13 +27,12 @@ namespace AngularCrudApi.Infrastructure.Persistence
                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
             }
 
-            #region Repositories
+
+            services.Configure<SqlDatabaseSettings>(configuration.GetSection(SqlDatabaseSettings.CONFIGURATION_KEY));
 
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
             services.AddTransient<IPositionRepositoryAsync, PositionRepositoryAsync>();
             services.AddTransient<IEmployeeRepositoryAsync, EmployeeRepositoryAsync>();
-
-            #endregion Repositories
-        }
+            services.AddSingleton<ICodebookRepository, SqlDatabaseCodebookRepository>();        }
     }
 }

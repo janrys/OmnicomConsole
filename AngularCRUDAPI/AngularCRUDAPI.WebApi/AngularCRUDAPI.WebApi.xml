@@ -4,6 +4,13 @@
         <name>AngularCrudApi.WebApi</name>
     </assembly>
     <members>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetAll(System.Boolean)">
+            <summary>
+            GET: api/controller
+            </summary>
+            <param name="includeRds"></param>
+            <returns></returns>
+        </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.EmployeesController.Get(AngularCrudApi.Application.Features.Employees.Queries.GetEmployees.GetEmployeesQuery)">
             <summary>
             GET: api/controller

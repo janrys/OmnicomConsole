@@ -1,5 +1,6 @@
 ﻿using AngularCrudApi.Application.Exceptions;
 using AngularCrudApi.Application.Wrappers;
+using AngularCrudApi.WebApi.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace AngularCrudApi.WebApi.Middlewares
     public class ErrorHandlerMiddleware
     {
         private readonly RequestDelegate _next;
+        private const string EXPOSE_HEADER_NAME = "access-control-expose-headers";
 
         public ErrorHandlerMiddleware(RequestDelegate next)
         {
@@ -20,6 +22,10 @@ namespace AngularCrudApi.WebApi.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
+            string correlationId = Guid.NewGuid().ToString();
+            context.Request.Headers.AddCorrelationId(correlationId);
+            context.Response.Headers.AddCorrelationId(correlationId);
+
             try
             {
                 await _next(context);
@@ -32,7 +38,7 @@ namespace AngularCrudApi.WebApi.Middlewares
 
                 switch (error)
                 {
-                    case Application.Exceptions.ApiException e:
+                    case ApiException e:
                         // custom application error
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         break;
