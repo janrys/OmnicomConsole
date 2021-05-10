@@ -6,10 +6,42 @@
     <members>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetAll(System.Boolean)">
             <summary>
-            GET: api/controller
+            Get list of codebooks
             </summary>
-            <param name="includeRds"></param>
-            <returns></returns>
+            <param name="includeRds">Include also RDS codebooks</param>
+            <returns>Codebook list</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetCodebook(System.String)">
+            <summary>
+            Get list of codebooks
+            </summary>
+            <param name="codebookName">Codebook full name</param>
+            <returns>Codebook list</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetCodebookData(System.String)">
+            <summary>
+            Get codebook data
+            </summary>
+            <param name="codebookName">Codebook full name</param>
+            <returns>Codebook data</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetLockState">
+            <summary>
+            Get current lock state
+            </summary>
+            <returns>Codebook data</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.CreateLockState">
+            <summary>
+            Get current lock state
+            </summary>
+            <returns>Codebook data</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.ReleaseLockState">
+            <summary>
+            Release current lock state
+            </summary>
+            <returns>Codebook data</returns>
         </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.EmployeesController.Get(AngularCrudApi.Application.Features.Employees.Queries.GetEmployees.GetEmployeesQuery)">
             <summary>

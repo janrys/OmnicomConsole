@@ -1,4 +1,5 @@
-﻿using AngularCrudApi.Domain.Entities;
+﻿using AngularCrudApi.Application.Exceptions;
+using AngularCrudApi.Domain.Entities;
 using AngularCrudApi.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -22,10 +23,11 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         }
 
         /// <summary>
-        /// GET: api/controller
+        /// Get list of codebooks
         /// </summary>
-        /// <param name="includeRds"></param>
-        /// <returns></returns>
+        /// <param name="includeRds">Include also RDS codebooks</param>
+        /// <returns>Codebook list</returns>
+        [ProducesResponseType(typeof(IEnumerable<Codebook>), StatusCodes.Status200OK)]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] bool includeRds = false)
         {
@@ -40,7 +42,147 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 this.log.LogError(errorMessage, exception);
                 throw new Exception(errorMessage);
             }
+        }
 
+        /// <summary>
+        /// Get list of codebooks
+        /// </summary>
+        /// <param name="codebookName">Codebook full name</param>
+        /// <returns>Codebook list</returns>
+        [ProducesResponseType(typeof(CodebookDetail), StatusCodes.Status200OK)]
+        [HttpGet("{codebookName}")]
+        public async Task<IActionResult> GetCodebook(string codebookName)
+        {
+            if (string.IsNullOrEmpty(codebookName))
+            {
+                return this.BadRequest($"Parameter {nameof(codebookName)} is mandatory");
+            }
+
+            try
+            {
+                CodebookDetail codebookDetail = await this.Query().Codebook.ByName(codebookName);
+
+                if (codebookDetail == null)
+                {
+                    return this.NotFound();
+                }
+
+                return this.Ok(codebookDetail);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error loading codebook detail {codebookName}";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Get codebook data
+        /// </summary>
+        /// <param name="codebookName">Codebook full name</param>
+        /// <returns>Codebook data</returns>
+        [ProducesResponseType(typeof(CodebookDetailWithData), StatusCodes.Status200OK)]
+        [HttpGet("{codebookName}/data")]
+        public async Task<IActionResult> GetCodebookData(string codebookName)
+        {
+            if (string.IsNullOrEmpty(codebookName))
+            {
+                return this.BadRequest($"Parameter {nameof(codebookName)} is mandatory");
+            }
+
+            try
+            {
+                CodebookDetailWithData codebookDetail = await this.Query().Codebook.Data(codebookName);
+
+                if (codebookDetail == null)
+                {
+                    return this.NotFound();
+                }
+
+                return this.Ok(codebookDetail);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error loading codebook detail {codebookName}";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Get current lock state
+        /// </summary>
+        /// <returns>Codebook data</returns>
+        [ProducesResponseType(typeof(LockState), StatusCodes.Status200OK)]
+        [HttpGet("lock")]
+        public async Task<IActionResult> GetLockState()
+        {
+            try
+            {
+                LockState lockState = await this.Query().Codebook.Lock();
+                return this.Ok(lockState);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error loading lock state";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Get current lock state
+        /// </summary>
+        /// <returns>Codebook data</returns>
+        [ProducesResponseType(typeof(LockState), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [HttpPost("lock")]
+        public async Task<IActionResult> CreateLockState()
+        {
+            LockState lockState = null;
+            try
+            {
+                lockState = await this.Command().Codebook.Lock();
+                return this.Ok(lockState);
+            }
+            catch (ValidationException validationException)
+            {
+                return this.Conflict(validationException.Errors);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error loading lock state";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Release current lock state
+        /// </summary>
+        /// <returns>Codebook data</returns>
+        [ProducesResponseType(typeof(LockState), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [HttpDelete("lock")]
+        public async Task<IActionResult> ReleaseLockState()
+        {
+            LockState lockState = null;
+            try
+            {
+                lockState = await this.Command().Codebook.Unlock();
+                return this.Ok(lockState);
+            }
+            catch (ValidationException validationException)
+            {
+                return this.Conflict(validationException.Errors);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error releasing lock state";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
         }
     }
 }

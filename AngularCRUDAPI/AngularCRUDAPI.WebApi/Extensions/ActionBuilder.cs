@@ -1,4 +1,5 @@
-﻿using AngularCrudApi.Application.Pipeline.Queries;
+﻿using AngularCrudApi.Application.Pipeline.Commands;
+using AngularCrudApi.Application.Pipeline.Queries;
 using AngularCrudApi.Domain.Entities;
 using MediatR;
 using System.Collections.Generic;
@@ -26,8 +27,26 @@ namespace AngularCrudApi.WebApi.Extensions
 
         ICodebookQueryBuilder IQueryBuilder.Codebook => this;
 
+        
+
         Task<IEnumerable<Codebook>> ICodebookQueryBuilder.All(bool includeRds)
             => this.mediator.Send(new CodebookAllQuery(includeRds, this.user));
+
+        Task<CodebookDetail> ICodebookQueryBuilder.ByName(string codebookName)
+            => this.mediator.Send(new CodebookByNameQuery(codebookName, this.user));
+
+        Task<CodebookDetailWithData> ICodebookQueryBuilder.Data(string codebookName)
+            => this.mediator.Send(new CodebookDataQuery(codebookName, this.user));
+
+        Task<LockState> ICodebookQueryBuilder.Lock()
+            => this.mediator.Send(new LockStateQuery(this.user));
+
+        Task<LockState> ICodeboookCommandBuilder.Lock()
+            => this.mediator.Send(new CreateLockCommand(this.user));
+
+        Task<LockState> ICodeboookCommandBuilder.Unlock()
+            => this.mediator.Send(new ReleaseLockCommand(this.user));
+
     }
 
     public interface IQueryBuilder
@@ -42,10 +61,15 @@ namespace AngularCrudApi.WebApi.Extensions
 
     public interface ICodeboookCommandBuilder
     {
+        Task<LockState> Lock();
+        Task<LockState> Unlock();
     }
 
     public interface ICodebookQueryBuilder
     {
         Task<IEnumerable<Codebook>> All(bool includeRds = false);
+        Task<CodebookDetail> ByName(string codebookName);
+        Task<CodebookDetailWithData> Data(string codebookName);
+        Task<LockState> Lock();
     }
 }

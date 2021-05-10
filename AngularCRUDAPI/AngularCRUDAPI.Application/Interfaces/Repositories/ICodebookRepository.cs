@@ -11,6 +11,11 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
     {
         public Task<IEnumerable<Codebook>> GetAll(bool includeRds);
         public Task<CodebookDetail> GetByName(string codebookName);
+
+        public Task<CodebookDetailWithData> GetData(string codebookName);
+        Task<LockState> GetLock();
+        Task<LockState> CreateLock(string userIdentifier, string userName, DateTime? created = null);
+        Task<LockState> ReleaseLock(DateTime? released = null);
     }
 
 

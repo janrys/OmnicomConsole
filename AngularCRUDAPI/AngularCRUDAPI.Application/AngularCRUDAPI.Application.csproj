@@ -18,8 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\AngularCrudApi.Domain\AngularCrudApi.Domain.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Pipeline\Commands\" />
-  </ItemGroup>
 
 </Project>

@@ -30,7 +30,7 @@ namespace AngularCrudApi.Domain.Security
         /// <summary>
         /// Can do anything
         /// </summary>
-        public static readonly RoleEnum SysAdmin = new RoleEnum(3, "sysadmin", externalIds: Guid.Parse(RoleGuids.Instance.SysAdminId), canRead: true, canWrite: true, canDelete: true
+        public static readonly RoleEnum SysAdmin = new RoleEnum(3, "sysadmin", externalIds: Guid.Parse(RoleGuids.Instance.AdminId), canRead: true, canWrite: true, canDelete: true
             , canWriteBusiness: true, canWriteTechnical: true, canWriteSensitive: true, canReadSensitive: true, canWriteOther: true);
 
         private RoleEnum(int value, string name, Boolean canRead = false, Boolean canWrite = false

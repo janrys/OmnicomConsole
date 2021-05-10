@@ -5,6 +5,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,9 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
     public class SqlDatabaseCodebookRepository : ICodebookRepository
     {
         private const string RDS_TABLE_PREFIX = "CB";
+        private const string CONFIGURATION_TABLE_SCHEME = "dbo";
+        private const string CONFIGURATION_TABLE_NAME = "CodebookConsoleConfiguration";
+        private const string CONFIGURATION_KEY_NAME_LOCK = "Lock";
         private readonly SqlDatabaseSettings settings;
         private readonly ILogger<SqlDatabaseCodebookRepository> log;
 
@@ -51,6 +55,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             {
                 List<Codebook> codebooks = new List<Codebook>();
                 string commandText = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
+                commandText += $" AND NOT TABLE_NAME = '{CONFIGURATION_TABLE_NAME}'";
 
                 if (!includeRds)
                 {
@@ -64,6 +69,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
         public async Task<CodebookDetail> GetByName(string codebookName)
         {
+            if (String.IsNullOrEmpty(codebookName))
+            {
+                return null;
+            }
+
+            if (codebookName.Contains('.'))
+            {
+                codebookName = this.GetTableName(codebookName);
+            }
+
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
                 CodebookDetail codebookDetail = null;
@@ -83,6 +98,93 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
+        public async Task<CodebookDetailWithData> GetData(string codebookName)
+        {
+            if (String.IsNullOrEmpty(codebookName))
+            {
+                return null;
+            }
+
+            if (codebookName.Contains('.'))
+            {
+                codebookName = this.GetTableName(codebookName);
+            }
+
+            CodebookDetail codebookDetail = await this.GetByName(codebookName);
+
+            if (codebookDetail == null)
+            {
+                return null;
+            }
+
+            CodebookDetailWithData codebookDetailWithData = new CodebookDetailWithData(codebookDetail);
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = $"SELECT * FROM {codebookDetailWithData.FullName}";
+                codebookDetailWithData.Data = (await sqlConnection.QueryAsync(commandText)).ToList();
+                return codebookDetailWithData;
+            }
+
+        }
+
+        private string GetTableName(string tableName) => tableName.Split('.').Last().Trim().Trim('[').Trim(']');
+        private string ConfigurationTableFullName => $"{CONFIGURATION_TABLE_SCHEME}.{CONFIGURATION_TABLE_NAME}";
+
+        public async Task<LockState> GetLock()
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = $"SELECT * FROM {this.ConfigurationTableFullName} WHERE [Key] = @keyName";
+                Configuration configuration = await sqlConnection.QueryFirstOrDefaultAsync<Configuration>(commandText, new { keyName = CONFIGURATION_KEY_NAME_LOCK });
+
+                LockState lockState;
+                if (configuration == null || String.IsNullOrEmpty(configuration.Value))
+                {
+                    lockState = new LockState() { IsLocked = false, ForUserId = "", ForUserName = "" };
+                }
+                else
+                {
+                    lockState = JsonConvert.DeserializeObject<LockState>(configuration.Value);
+                }
+
+                return lockState;
+            }
+        }
+
+        public Task<LockState> CreateLock(string userIdentifier, string userName, DateTime? created = null)
+            => this.UpsertLock(userIdentifier, userName, created);
+
+        public Task<LockState> ReleaseLock(DateTime? released = null) => this.UpsertLock("", "");
+
+        private async Task<LockState> UpsertLock(string userIdentifier, string userName, DateTime? created = null)
+        {
+            if (!created.HasValue)
+            {
+                created = DateTime.UtcNow;
+            }
+
+            Boolean isLocked = !String.IsNullOrEmpty(userIdentifier);
+
+            LockState lockState = new LockState() { ForUserId = userIdentifier, ForUserName = userName, Created = created.Value, IsLocked = isLocked };
+            string lockValue = JsonConvert.SerializeObject(lockState);
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                StringBuilder upsertCommand = new StringBuilder();
+                upsertCommand.AppendLine("BEGIN TRANSACTION;");
+                upsertCommand.AppendLine($"UPDATE {this.ConfigurationTableFullName} WITH (UPDLOCK, SERIALIZABLE) SET [Value] = @value WHERE [Key] = @key;");
+                upsertCommand.AppendLine("IF @@ROWCOUNT = 0");
+                upsertCommand.AppendLine("BEGIN");
+                upsertCommand.AppendLine($"   INSERT {this.ConfigurationTableFullName}([Key], [Value]) VALUES(@key, @value);");
+                upsertCommand.AppendLine("END");
+                upsertCommand.AppendLine("COMMIT TRANSACTION;");
+
+                await sqlConnection.ExecuteAsync(upsertCommand.ToString(), new { key = CONFIGURATION_KEY_NAME_LOCK, value = lockValue });
+            }
+
+            return lockState;
+        }
 
         private class TableName
         {
@@ -108,6 +210,13 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
             public static explicit operator ColumnDefinition(TableColumnDetail column)
                 => new ColumnDefinition() { Name = column.COLUMN_NAME, IsNullable = column.IsNullable, DataType = column.DATA_TYPE, MaximumLength = column.CHARACTER_MAXIMUM_LENGTH };
+        }
+
+        private class Configuration
+        {
+            public int Id { get; set; }
+            public string Key { get; set; }
+            public string Value { get; set; }
         }
     }
 }

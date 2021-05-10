@@ -22,6 +22,12 @@ namespace AngularCrudApi.Application.Exceptions
             }
         }
 
+        public ValidationException(IEnumerable<string> failureMessages)
+            : this()
+        {
+            Errors.AddRange(failureMessages);
+        }
+
         public ValidationException(string message) : base(message)
         {
         }
