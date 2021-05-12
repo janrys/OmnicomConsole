@@ -18,6 +18,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
     public class SqlDatabaseCodebookRepository : ICodebookRepository
     {
         private const string RDS_TABLE_PREFIX = "CB";
+        private const string ADMIN_CONSOLE_TABLE_PREFIX = "CodebookConsole";
         private const string CONFIGURATION_TABLE_SCHEME = "dbo";
         private const string CONFIGURATION_TABLE_NAME = "CodebookConsoleConfiguration";
         private const string CONFIGURATION_KEY_NAME_LOCK = "Lock";
@@ -55,7 +56,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             {
                 List<Codebook> codebooks = new List<Codebook>();
                 string commandText = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
-                commandText += $" AND NOT TABLE_NAME = '{CONFIGURATION_TABLE_NAME}'";
+                commandText += $" AND NOT TABLE_NAME like '{ADMIN_CONSOLE_TABLE_PREFIX}%'";
 
                 if (!includeRds)
                 {
@@ -82,7 +83,11 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
                 CodebookDetail codebookDetail = null;
-                string commandText = "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @tableName";
+                string commandText = @"
+                    SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME, c.IS_NULLABLE, c.DATA_TYPE, c.CHARACTER_MAXIMUM_LENGTH, COLUMNPROPERTY(object_id(c.TABLE_SCHEMA+'.'+c.TABLE_NAME), c.COLUMN_NAME, 'IsIdentity') IS_IDENTITY, IIF(CU.ORDINAL_POSITION IS NULL, 0, 1) IS_PRIMARY
+                    FROM INFORMATION_SCHEMA.COLUMNS c
+                    LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE CU on c.TABLE_SCHEMA = CU.TABLE_SCHEMA AND c.TABLE_NAME = CU.TABLE_NAME AND c.COLUMN_NAME = CU.COLUMN_NAME
+                    WHERE c.TABLE_NAME = @tableName";
                 IEnumerable<TableColumnDetail> tableColumnDetail = await sqlConnection.QueryAsync<TableColumnDetail>(commandText, new { tableName = codebookName });
 
                 if (tableColumnDetail != null && tableColumnDetail.Any())
@@ -152,21 +157,26 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
-        public Task<LockState> CreateLock(string userIdentifier, string userName, DateTime? created = null)
-            => this.UpsertLock(userIdentifier, userName, created);
+        public Task<LockState> CreateLock(string userIdentifier, string userName, int releaseId, DateTime? created = null)
+            => this.UpsertLock(userIdentifier, userName, releaseId, created);
 
         public Task<LockState> ReleaseLock(DateTime? released = null) => this.UpsertLock("", "");
 
-        private async Task<LockState> UpsertLock(string userIdentifier, string userName, DateTime? created = null)
+        private async Task<LockState> UpsertLock(string userIdentifier, string userName, int? releaseId = null, DateTime? created = null)
         {
             if (!created.HasValue)
             {
                 created = DateTime.UtcNow;
             }
 
+            if (!releaseId.HasValue)
+            {
+                releaseId = -1;
+            }
+
             Boolean isLocked = !String.IsNullOrEmpty(userIdentifier);
 
-            LockState lockState = new LockState() { ForUserId = userIdentifier, ForUserName = userName, Created = created.Value, IsLocked = isLocked };
+            LockState lockState = new LockState() { ForUserId = userIdentifier, ForUserName = userName, Created = created.Value, IsLocked = isLocked, ForReleaseId = releaseId.Value };
             string lockValue = JsonConvert.SerializeObject(lockState);
 
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
@@ -184,6 +194,51 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
 
             return lockState;
+        }
+
+        public Task<CodebookDetailWithData> InsertData(string codebookName, int releaseId, IDictionary<string, object> values)
+        {
+            return Task.FromResult((CodebookDetailWithData)null);
+        }
+
+        public Task UpdateData(string codebookName, int releaseId, object key, IDictionary<string, object> values)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteData(string codebookName, int releaseId, object key)
+        {
+            return Task.CompletedTask;
+        }
+
+        private Task SaveReleaseChange(ReleaseChange releaseChange)
+        {
+            return Task.CompletedTask;
+        }
+
+        private string AssembleSqlCommand()
+        {
+            return "";
+        }
+
+        public async Task<IEnumerable<Release>> GetAllReleases()
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRelease";
+                IEnumerable<Release> releases = await sqlConnection.QueryAsync<Release>(commandText);
+                return releases;
+            }
+        }
+
+        public async Task<IEnumerable<Request>> GetRequests(int releaseId)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE ReleaseId = @id";
+                IEnumerable<Request> requests = await sqlConnection.QueryAsync<Request>(commandText, new { id = releaseId });
+                return requests;
+            }
         }
 
         private class TableName
@@ -206,10 +261,21 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             public string DATA_TYPE { get; set; }
             public int CHARACTER_MAXIMUM_LENGTH { get; set; }
 
+            public bool IS_IDENTITY { get; set; }
+            public bool IS_PRIMARY { get; set; }
+
             public Boolean IsNullable => !String.IsNullOrEmpty(this.IS_NULLABLE) && this.IS_NULLABLE.Equals("YES", StringComparison.InvariantCultureIgnoreCase);
 
             public static explicit operator ColumnDefinition(TableColumnDetail column)
-                => new ColumnDefinition() { Name = column.COLUMN_NAME, IsNullable = column.IsNullable, DataType = column.DATA_TYPE, MaximumLength = column.CHARACTER_MAXIMUM_LENGTH };
+                => new ColumnDefinition()
+                {
+                    Name = column.COLUMN_NAME,
+                    IsNullable = column.IsNullable,
+                    DataType = column.DATA_TYPE,
+                    MaximumLength = column.CHARACTER_MAXIMUM_LENGTH,
+                    IsIdentity = column.IS_IDENTITY,
+                    IsPrimaryKey = column.IS_PRIMARY
+                };
         }
 
         private class Configuration

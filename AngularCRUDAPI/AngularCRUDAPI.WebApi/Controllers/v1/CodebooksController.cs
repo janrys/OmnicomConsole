@@ -45,7 +45,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         }
 
         /// <summary>
-        /// Get list of codebooks
+        /// Get codebook detail
         /// </summary>
         /// <param name="codebookName">Codebook full name</param>
         /// <returns>Codebook list</returns>
@@ -184,5 +184,6 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 throw new Exception(errorMessage);
             }
         }
+        
     }
 }

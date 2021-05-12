@@ -13,7 +13,7 @@
         </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetCodebook(System.String)">
             <summary>
-            Get list of codebooks
+            Get codebook detail
             </summary>
             <param name="codebookName">Codebook full name</param>
             <returns>Codebook list</returns>
@@ -99,6 +99,18 @@
             </summary>
             <param name="id"></param>
             <returns></returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.GetAll">
+            <summary>
+            Get list of releases
+            </summary>
+            <returns>Release list</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.GetRequests(System.Int32)">
+            <summary>
+            Get list of releases
+            </summary>
+            <returns>Release list</returns>
         </member>
     </members>
 </doc>

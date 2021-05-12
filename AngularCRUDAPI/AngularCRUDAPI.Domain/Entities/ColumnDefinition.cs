@@ -7,5 +7,7 @@
 
         public string DataType { get; set; }
         public int MaximumLength { get; set; }
+        public bool IsIdentity { get; set; }
+        public bool IsPrimaryKey { get; set; }
     }
 }

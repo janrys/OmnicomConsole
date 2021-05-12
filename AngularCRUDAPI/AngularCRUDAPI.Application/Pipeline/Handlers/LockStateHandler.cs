@@ -58,7 +58,7 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
 
             try
             {
-                return await this.codebookRepository.CreateLock(request.User.GetIdentifier(), request.User.GetName());
+                return await this.codebookRepository.CreateLock(request.User.GetIdentifier(), request.User.GetName(), 5);
             }
             catch (Exception exception)
             {
