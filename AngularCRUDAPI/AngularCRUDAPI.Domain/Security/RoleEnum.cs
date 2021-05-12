@@ -26,7 +26,7 @@ namespace AngularCrudApi.Domain.Security
         /// <summary>
         /// Can edit any attributes in templates
         /// </summary>
-        public static readonly RoleEnum Editor = new RoleEnum(2, "Editor", externalIds: Guid.Parse(RoleGuids.Instance.EditorId), canRead: true, canWriteOther: true, canReadSensitive: true, canWriteBusiness: true, canWriteSensitive: true);
+        public static readonly RoleEnum Editor = new RoleEnum(2, "editor", externalIds: Guid.Parse(RoleGuids.Instance.EditorId), canRead: true, canWriteOther: true, canReadSensitive: true, canWriteBusiness: true, canWriteSensitive: true);
         /// <summary>
         /// Can do anything
         /// </summary>

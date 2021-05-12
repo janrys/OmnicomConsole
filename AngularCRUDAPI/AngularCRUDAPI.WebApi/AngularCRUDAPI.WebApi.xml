@@ -112,5 +112,46 @@
             </summary>
             <returns>Release list</returns>
         </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.LogIn(System.String)">
+            <summary>
+            Login user
+            </summary>
+            <param name="state">Optional state to receive back after redirect</param>
+            <returns>Redirect to authorization server</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.LogOut">
+            <summary>
+            Logout current user
+            </summary>
+            <returns>Logout result</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.Token(System.String)">
+            <summary>
+            Get access token and login user
+            </summary>
+            <param name="code">Authorization code</param>
+            <returns>Access token with expiration time</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.RefreshToken(System.String)">
+            <summary>
+            Refresh access token
+            </summary>
+            <param name="authorization">Authorization header in form "Bearer {token}"</param>
+            <returns>New access token with expiration time</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.Me(System.String)">
+            <summary>
+            Get information about current user
+            <param name="authorization">Authorization header in form "Bearer {token}"</param>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.ExtractTokenFromHeader(System.String)">
+            <summary>
+            Extract token from authorization header in form of "Bearer ejfasdfasdf..."
+            </summary>
+            <param name="authorization"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

@@ -19,7 +19,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
 
         public CodebooksController(IMediator mediator, ILogger<CodebooksController> log) : base(mediator)
         {
-            this.log = log;
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using AngularCrudApi.Application;
+using AngularCrudApi.Domain.Settings;
 using AngularCrudApi.Infrastructure.Persistence;
 using AngularCrudApi.Infrastructure.Persistence.Contexts;
 using AngularCrudApi.Infrastructure.Shared;
@@ -10,24 +11,25 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace AngularCrudApi.WebApi
 {
     public class Startup
     {
-        public IConfiguration _config { get; }
+        public IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
-            _config = configuration;
+            Configuration = configuration;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddApplicationLayer();
-            services.AddPersistenceInfrastructure(_config);
-            services.AddSharedInfrastructure(_config);
+            services.AddPersistenceInfrastructure(this.Configuration);
+            services.AddSharedInfrastructure(this.Configuration);
             services.AddSwaggerExtension();
             services.AddControllersExtension();
             // CORS
@@ -40,9 +42,10 @@ namespace AngularCrudApi.WebApi
                 .AddApiExplorer();
             // API explorer version
             services.AddVersionedApiExplorerExtension();
+            services.Configure<GlobalSettings>(this.Configuration.GetSection(GlobalSettings.CONFIGURATION_KEY));
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, ApplicationDbContext dbContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, ApplicationDbContext dbContext, IOptions<GlobalSettings> globalConfiguration)
         {
             if (env.IsDevelopment())
             {
@@ -55,6 +58,7 @@ namespace AngularCrudApi.WebApi
             }
 
             dbContext.Database.EnsureCreated();
+            app.InitSecuritRoles(globalConfiguration.Value.Environment);
 
             // Add this line; you'll need `using Serilog;` up the top, too
             app.UseSerilogRequestLogging();

@@ -19,7 +19,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
 
         public ReleasesController(IMediator mediator, ILogger<ReleasesController> log) : base(mediator)
         {
-            this.log = log;
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         /// <summary>

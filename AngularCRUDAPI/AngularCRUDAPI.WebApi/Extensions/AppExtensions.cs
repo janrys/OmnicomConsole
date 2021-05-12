@@ -18,5 +18,11 @@ namespace AngularCrudApi.WebApi.Extensions
         {
             app.UseMiddleware<ErrorHandlerMiddleware>();
         }
+
+        public static IApplicationBuilder InitSecuritRoles(this IApplicationBuilder builder, string environment)
+        {
+            Domain.Security.RoleGuids.SetupInstance(environment);
+            return builder;
+        }
     }
 }
