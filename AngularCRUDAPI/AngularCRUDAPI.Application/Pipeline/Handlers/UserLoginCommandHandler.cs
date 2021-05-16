@@ -29,7 +29,18 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
         {
             try
             {
-                return this.userProvider.Login(request.CodeGrantResponse);
+                if (request.CodeGrantResponse != null)
+                {
+                    return this.userProvider.Login(request.CodeGrantResponse);
+                }
+                else if(request.CodebookUser != null)
+                {
+                    return this.userProvider.Login(request.CodebookUser);
+                }
+                else
+                {
+                    throw new ArgumentException($"Both parameters {nameof(request.CodebookUser)} and {nameof(request.CodeGrantResponse)} cannot be null");
+                }                
             }
             catch (Exception exception)
             {

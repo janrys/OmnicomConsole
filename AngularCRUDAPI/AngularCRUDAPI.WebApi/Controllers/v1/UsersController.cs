@@ -36,7 +36,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         /// <returns>Redirect to authorization server</returns>
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status302Found)]
-        [HttpGet("logIn")]
+        [HttpGet("login")]
         public IActionResult LogIn(string state = null)
         {
             string authorizationUrl = this.authorizationServerClient.GetAuthorizationLink(state);
@@ -47,7 +47,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         /// Logout current user
         /// </summary>
         /// <returns>Logout result</returns>
-        [HttpGet("logOut")]
+        [HttpGet("logout")]
         public async Task<IActionResult> LogOut()
         {
             await this.Command().User.Logout();

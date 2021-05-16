@@ -74,24 +74,25 @@ namespace AngularCrudApi.Infrastructure.Shared.Services
             return Task.FromResult(codebookUser);
         }
 
-        public Task Login(CodebookUser codebookUser)
+        public Task<CodebookUser> Login(CodebookUser codebookUser)
         {
             return this.UpsertUser(codebookUser, DateTime.UtcNow);
         }
 
-        private Task UpsertUser(CodebookUser codebookUser, DateTime utcNow)
+        private Task<CodebookUser> UpsertUser(CodebookUser codebookUser, DateTime utcNow)
         {
             if(this.codebookUsers.Any(u=>u.Identifier.Equals(codebookUser.Identifier)))
             {
                 CodebookUser storedUser = this.codebookUsers.First(u => u.Identifier.Equals(codebookUser.Identifier));
                 storedUser.RefreshFrom(codebookUser);
+                codebookUser = storedUser;
             }
             else
             {
                 this.codebookUsers.Add(codebookUser);
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(codebookUser);
         }
 
         public async Task<CodebookUser> Login(CodeGrantResponse codeGrantResponse)

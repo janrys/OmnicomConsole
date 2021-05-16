@@ -31,5 +31,16 @@ namespace AngularCrudApi.Domain.Entities
         {
             return principal.Claims.FirstOrDefault(c => c.Type.Equals(CLAIM_TYPE_IDENTIFIER, StringComparison.InvariantCultureIgnoreCase))?.Value ?? null;
         }
+
+        public static ClaimsIdentity ToClaimIdentity(this CodebookUser codebookUser)
+        {
+            List<Claim> claims = new List<Claim>();
+            claims.Add(new Claim(CLAIM_TYPE_IDENTIFIER, codebookUser.Identifier));
+            claims.Add(new Claim(CLAIM_TYPE_NAME, codebookUser.Name));
+            claims.Add(new Claim(CLAIM_TYPE_CEN, codebookUser.Upn));
+            claims.AddRange(codebookUser.Roles.Select(r => new Claim(CLAIM_TYPE_ROLE, r)));
+
+            return new ClaimsIdentity(claims, AUTHENTICATION_TYPE);
+        }
     }
 }

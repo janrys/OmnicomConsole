@@ -12,6 +12,12 @@ namespace AngularCrudApi.Application.Pipeline.Commands
             this.CodeGrantResponse = codeGrantResponse;
         }
 
+        public UserLoginCommand(CodebookUser codebookUser, ClaimsPrincipal user) : base(user, null)
+        {
+            this.CodebookUser = codebookUser;
+        }
+
         public CodeGrantResponse CodeGrantResponse { get; }
+        public CodebookUser CodebookUser { get; set; }
     }
 }

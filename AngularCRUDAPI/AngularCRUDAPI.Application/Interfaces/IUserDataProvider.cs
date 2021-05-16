@@ -10,7 +10,7 @@ namespace AngularCrudApi.Application.Interfaces
 {
     public interface IUserDataProvider
     {
-        Task Login(CodebookUser codebookUser);
+        Task<CodebookUser> Login(CodebookUser codebookUser);
         Task<CodebookUser> Login(CodeGrantResponse codeGrantResponse);
         Task Logout(string identifier);
         Task<CodebookUser> LoginRefresh(CodeGrantResponse codeGrantResponse, string oldAccessToken);

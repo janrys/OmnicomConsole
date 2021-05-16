@@ -18,15 +18,19 @@ namespace AngularCrudApi.WebApi
 {
     public class Startup
     {
+        private ILogger<Startup> log;
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
+            this.Environment = environment;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCodebooksConsoleAuthentication(this.Configuration, this.Environment, this.log);
             services.AddApplicationLayer();
             services.AddPersistenceInfrastructure(this.Configuration);
             services.AddSharedInfrastructure(this.Configuration);
@@ -57,12 +61,15 @@ namespace AngularCrudApi.WebApi
                 app.UseHsts();
             }
 
-            dbContext.Database.EnsureCreated();
-            app.InitSecuritRoles(globalConfiguration.Value.Environment);
-
             // Add this line; you'll need `using Serilog;` up the top, too
             app.UseSerilogRequestLogging();
             loggerFactory.AddSerilog();
+            this.log = loggerFactory.CreateLogger<Startup>();
+
+
+            dbContext.Database.EnsureCreated();
+            app.InitSecuritRoles(globalConfiguration.Value.Environment);
+
             app.UseHttpsRedirection();
             app.UseRouting();
             //Enable CORS

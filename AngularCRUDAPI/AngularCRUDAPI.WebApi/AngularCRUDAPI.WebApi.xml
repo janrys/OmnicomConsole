@@ -153,5 +153,13 @@
             <param name="authorization"></param>
             <returns></returns>
         </member>
+        <member name="T:AngularCrudApi.WebApi.Helpers.AzureAdScopeClaimTransformation">
+            <summary>
+            Splits the scope claim assigned by Azure AD
+            by spaces so that you can check for a scope with
+            <code>User.HasClaim(Constants.ScopeClaimType, "scope")</code>,
+            instead of having to split by space every time.
+            </summary>
+        </member>
     </members>
 </doc>
