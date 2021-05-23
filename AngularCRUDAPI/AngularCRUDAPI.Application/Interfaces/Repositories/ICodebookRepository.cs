@@ -21,7 +21,14 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task UpdateData(string codebookName, int releaseId, object key, IDictionary<string, object> values);
         Task DeleteData(string codebookName, int releaseId, object key);
         Task<IEnumerable<Release>> GetAllReleases();
+        Task<Release> CreateRelease(Release release);
+        Task<Release> UpdateRelease(Release release);
+        Task DeleteRelease(int releaseId);
         Task<IEnumerable<Request>> GetRequests(int releaseId);
+        Task<Request> CreateRequest(Request request);
+        Task<Request> UpdateRequest(Request request);
+        Task DeleteRequest(int requestId);
+        Task<Request> GetRequestById(int id);
     }
 
 

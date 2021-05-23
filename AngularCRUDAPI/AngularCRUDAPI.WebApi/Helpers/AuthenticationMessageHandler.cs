@@ -1,5 +1,6 @@
 ﻿using AngularCrudApi.Application.Pipeline.Commands;
 using AngularCrudApi.Application.Pipeline.Queries;
+using AngularCrudApi.Application.Security;
 using AngularCrudApi.Domain.Entities;
 using AngularCrudApi.WebApi.Extensions;
 using MediatR;

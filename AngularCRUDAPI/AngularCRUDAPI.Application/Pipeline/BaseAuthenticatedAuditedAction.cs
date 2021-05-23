@@ -1,5 +1,5 @@
 ﻿using AngularCrudApi.Application.Interfaces;
-using AngularCrudApi.Domain.Security;
+using AngularCrudApi.Application.Security;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;

@@ -1,13 +1,9 @@
-﻿using AngularCrudApi.Application.Interfaces;
-using AngularCrudApi.Domain.Entities;
-using AngularCrudApi.Domain.Security;
+﻿using AngularCrudApi.Domain.Entities;
 using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AngularCrudApi.Application.Pipeline.Queries
 {

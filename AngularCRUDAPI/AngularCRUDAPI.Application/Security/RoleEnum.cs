@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AngularCrudApi.Domain.Security
+namespace AngularCrudApi.Application.Security
 {
     public interface IRoleEnum : IEnumeration
     {
@@ -33,9 +33,9 @@ namespace AngularCrudApi.Domain.Security
         public static readonly RoleEnum SysAdmin = new RoleEnum(3, "sysadmin", externalIds: Guid.Parse(RoleGuids.Instance.AdminId), canRead: true, canWrite: true, canDelete: true
             , canWriteBusiness: true, canWriteTechnical: true, canWriteSensitive: true, canReadSensitive: true, canWriteOther: true);
 
-        private RoleEnum(int value, string name, Boolean canRead = false, Boolean canWrite = false
-            , Boolean canDelete = false, Boolean canWriteBusiness = false, Boolean canWriteTechnical = false
-            , Boolean canWriteSensitive = false, Boolean canReadSensitive = false, Boolean canWriteOther = false, params Guid[] externalIds)
+        private RoleEnum(int value, string name, bool canRead = false, bool canWrite = false
+            , bool canDelete = false, bool canWriteBusiness = false, bool canWriteTechnical = false
+            , bool canWriteSensitive = false, bool canReadSensitive = false, bool canWriteOther = false, params Guid[] externalIds)
             : this(value, name, new AccessRightSet(canRead, canWrite, canDelete, canReadSensitive, canWriteSensitive
                 , canWriteBusiness, canWriteTechnical, canWriteOther), externalIds)
         {

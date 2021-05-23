@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace AngularCrudApi.Application.Pipeline.Handlers
 {
     public class RequestByReleaseQueryHandler : IRequestHandler<RequestByReleaseQuery, IEnumerable<Request>>
+        , IRequestHandler<RequestByIdQuery, Request>
     {
         private readonly ICodebookRepository codebookRepository;
         private readonly ILogger<RequestByReleaseQueryHandler> log;
@@ -30,6 +31,19 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
             catch (Exception exception)
             {
                 this.log.LogError("Error loading requests", exception);
+                throw;
+            }
+        }
+
+        public Task<Request> Handle(RequestByIdQuery request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return this.codebookRepository.GetRequestById(request.Id);
+            }
+            catch (Exception exception)
+            {
+                this.log.LogError($"Error loading request by id {request.Id}", exception);
                 throw;
             }
         }

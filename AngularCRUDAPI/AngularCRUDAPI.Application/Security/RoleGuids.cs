@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AngularCrudApi.Domain.Security
+namespace AngularCrudApi.Application.Security
 {
     /// <summary>
     /// Role object ids from AAD for different environments

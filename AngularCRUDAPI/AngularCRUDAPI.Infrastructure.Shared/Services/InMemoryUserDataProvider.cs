@@ -1,7 +1,7 @@
 ﻿using AngularCrudApi.Application.DTOs;
 using AngularCrudApi.Application.Interfaces;
+using AngularCrudApi.Application.Security;
 using AngularCrudApi.Domain.Entities;
-using AngularCrudApi.Domain.Security;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;

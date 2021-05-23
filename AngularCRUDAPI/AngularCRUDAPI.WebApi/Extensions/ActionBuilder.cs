@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 
 namespace AngularCrudApi.WebApi.Extensions
 {
-    public class ActionBuilder : ICommandBuilder, IQueryBuilder, ICodeboookCommandBuilder, ICodebookQueryBuilder
-        , IReleasesQueryBuilder
+    public class ActionBuilder : ICommandBuilder, IQueryBuilder
+        , ICodeboookCommandBuilder, ICodebookQueryBuilder
+        , IReleaseCommandBuilder, IReleasesQueryBuilder
         , IUserCommandBuilder, IUserQueryBuilder
     {
         private readonly ClaimsPrincipal user;
@@ -28,6 +29,7 @@ namespace AngularCrudApi.WebApi.Extensions
 
         ICodeboookCommandBuilder ICommandBuilder.Codebook => this;
         IUserCommandBuilder ICommandBuilder.User => this;
+        IReleaseCommandBuilder ICommandBuilder.Release => this;
 
         ICodebookQueryBuilder IQueryBuilder.Codebook => this;
         IReleasesQueryBuilder IQueryBuilder.Release => this;
@@ -59,6 +61,9 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<CodebookUser> IUserCommandBuilder.Login(CodeGrantResponse codeGrantResponse, string token)
             => this.mediator.Send(new UserLoginRefreshCommand(codeGrantResponse, token, this.user));
 
+        Task<CodebookUser> IUserQueryBuilder.ByToken(string token)
+            => this.mediator.Send(new UserByTokenQuery(token, this.user));
+
         Task IUserCommandBuilder.Logout()
             => this.mediator.Send(new UserLogoutCommand(this.user));
 
@@ -68,8 +73,20 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<IEnumerable<Request>> IReleasesQueryBuilder.Requests(int releaseId)
             => this.mediator.Send(new RequestByReleaseQuery(releaseId, this.user));
 
-        Task<CodebookUser> IUserQueryBuilder.ByToken(string token)
-            => this.mediator.Send(new UserByTokenQuery(token, this.user));
+        Task<Request> IReleasesQueryBuilder.RequestById(int id)
+            => this.mediator.Send(new RequestByIdQuery(id, this.user));
+
+        Task<Release> IReleaseCommandBuilder.Create(Release release)
+            => this.mediator.Send(new ReleaseCreateCommand(release, this.user));
+
+        Task<Request> IReleaseCommandBuilder.CreateRequest(Request request)
+            => this.mediator.Send(new RequestCreateCommand(request, this.user));
+
+        Task<Request> IReleaseCommandBuilder.UpdateRequest(Request request)
+            => this.mediator.Send(new RequestUpdateCommand(request, this.user));
+
+        Task IReleaseCommandBuilder.DeleteRequest(int requestId)
+            => this.mediator.Send(new RequestDeleteCommand(requestId, this.user));
     }
 
     public interface IQueryBuilder
@@ -83,7 +100,7 @@ namespace AngularCrudApi.WebApi.Extensions
     {
         ICodeboookCommandBuilder Codebook { get; }
         IUserCommandBuilder User { get; }
-
+        IReleaseCommandBuilder Release { get; }
     }
 
     public interface ICodeboookCommandBuilder
@@ -98,6 +115,14 @@ namespace AngularCrudApi.WebApi.Extensions
         Task Logout();
     }
 
+    public interface IReleaseCommandBuilder
+    {
+        Task<Release> Create(Release release);
+        Task<Request> CreateRequest(Request request);
+        Task<Request> UpdateRequest(Request request);
+        Task DeleteRequest(int requestId);
+    }
+
     public interface ICodebookQueryBuilder
     {
         Task<IEnumerable<Codebook>> All(bool includeRds = false);
@@ -110,6 +135,7 @@ namespace AngularCrudApi.WebApi.Extensions
     {
         Task<IEnumerable<Release>> All();
         Task<IEnumerable<Request>> Requests(int releaseId);
+        Task<Request> RequestById(int id);
     }
 
     public interface IUserQueryBuilder

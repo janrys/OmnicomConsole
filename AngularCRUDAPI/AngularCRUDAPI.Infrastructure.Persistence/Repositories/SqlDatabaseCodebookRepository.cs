@@ -1,7 +1,9 @@
-﻿using AngularCrudApi.Application.Interfaces.Repositories;
+﻿using AngularCrudApi.Application.Helpers;
+using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Domain.Entities;
 using AngularCrudApi.Infrastructure.Persistence.Settings;
 using Dapper;
+using Dapper.Contrib.Extensions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -238,6 +240,172 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE ReleaseId = @id";
                 IEnumerable<Request> requests = await sqlConnection.QueryAsync<Request>(commandText, new { id = releaseId });
                 return requests;
+            }
+        }
+
+        public async Task<Request> GetRequestById(int id)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE Id = @id";
+                Request requests = await sqlConnection.QueryFirstOrDefaultAsync<Request>(commandText, new { id = id });
+                return requests;
+            }
+        }
+
+        public async Task<Release> CreateRelease(Release release)
+        {
+            if (release == null)
+            {
+                throw new ArgumentNullException(nameof(release));
+            }
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"INSERT INTO [dbo].[CodebookConsoleRelease] ([Name], [Date], [Version], [Status])
+                    OUTPUT INSERTED.Id
+                    VALUES (@Name, @Date, @Version, @Status)";
+                int insertedID = await sqlConnection.QuerySingleAsync<int>(createCommand, new
+                {
+                    release.Name,
+                    release.Date,
+                    release.Version,
+                    release.Status
+                });
+                release.Id = insertedID;
+            }
+
+            return release;
+        }
+
+        public async Task<Release> UpdateRelease(Release release)
+        {
+            if (release == null)
+            {
+                throw new ArgumentNullException(nameof(release));
+            }
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"UPDATE [dbo].[CodebookConsoleRelease]
+                    SET [Name] = @Name, 
+                        [Date] = @Date, 
+                        [Version] = @Version,
+                        [Status] = @Status
+                    WHERE [Id] = @Id";
+                int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
+                {
+                    release.Id,
+                    release.Name,
+                    release.Date,
+                    release.Version,
+                    release.Status
+                });
+
+                if (affectedRows != 1)
+                {
+                    this.log.LogWarning($"Update affected {affectedRows} rows, but should be just one. Release {release.ToLogString()}");
+                }
+            }
+
+            return release;
+        }
+
+        public async Task DeleteRelease(int releaseId)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"DELETE FROM [dbo].[CodebookConsoleRelease]  WHERE [Id] = @Id";
+                int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
+                {
+                    releaseId
+                });
+
+                if (affectedRows != 1)
+                {
+                    this.log.LogWarning($"Delete affected {affectedRows} rows, but should be just one. Release id {releaseId}");
+                }
+            }
+        }
+
+        public async Task<Request> CreateRequest(Request request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"INSERT INTO [dbo].[CodebookConsoleRequest] ([Name], [SequenceNumber], [Description], [Status], [ReleaseId], [WasExported])
+                    OUTPUT INSERTED.Id
+                    VALUES (@Name, @SequenceNumber, @Description, @Status, @ReleaseId, @WasExported)";
+                int insertedID = await sqlConnection.QuerySingleAsync<int>(createCommand, new
+                {
+                    request.Name,
+                    request.SequenceNumber,
+                    request.Description,
+                    request.Status,
+                    request.ReleaseId,
+                    request.WasExported
+                });
+                request.Id = insertedID;
+            }
+
+            return request;
+        }
+
+        public async Task<Request> UpdateRequest(Request request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"UPDATE [dbo].[CodebookConsoleRequest]
+                    SET [Name] = @Name, 
+                        [SequenceNumber] = @SequenceNumber, 
+                        [Description] = @Description,
+                        [Status] = @Status,
+                        [ReleaseId] = @ReleaseId,
+                        [WasExported] = @WasExported
+                    WHERE [Id] = @Id";
+                int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
+                {
+                    request.Id,
+                    request.Name,
+                    request.SequenceNumber,
+                    request.Description,
+                    request.Status,
+                    request.ReleaseId,
+                    request.WasExported
+                });
+
+                if (affectedRows != 1)
+                {
+                    this.log.LogWarning($"Update affected {affectedRows} rows, but should be just one. Request {request.ToLogString()}");
+                }
+            }
+
+            return request;
+        }
+
+        public async Task DeleteRequest(int requestId)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"DELETE FROM [dbo].[CodebookConsoleRequest]  WHERE [Id] = @Id";
+                int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
+                {
+                    Id = requestId
+                });
+
+                if (affectedRows != 1)
+                {
+                    this.log.LogWarning($"Delete affected {affectedRows} rows, but should be just one. Request id {requestId}");
+                }
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using AngularCrudApi.WebApi.Middlewares;
+﻿using AngularCrudApi.Application.Security;
+using AngularCrudApi.WebApi.Middlewares;
 using Microsoft.AspNetCore.Builder;
 
 namespace AngularCrudApi.WebApi.Extensions
@@ -21,7 +22,7 @@ namespace AngularCrudApi.WebApi.Extensions
 
         public static IApplicationBuilder InitSecuritRoles(this IApplicationBuilder builder, string environment)
         {
-            Domain.Security.RoleGuids.SetupInstance(environment);
+            RoleGuids.SetupInstance(environment);
             return builder;
         }
     }

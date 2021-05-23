@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AngularCrudApi.Domain.Security
+namespace AngularCrudApi.Application.Security
 {
     public struct AccessRightSet
     {
-        public AccessRightSet(Boolean canRead = false, Boolean canWrite = false, Boolean canDelete = false, Boolean canReadSensitive = false
-            , Boolean canWriteSensitive = false, Boolean canWriteBusiness = false, Boolean canWriteTechnical = false, Boolean canWriteOther = false)
+        public AccessRightSet(bool canRead = false, bool canWrite = false, bool canDelete = false, bool canReadSensitive = false
+            , bool canWriteSensitive = false, bool canWriteBusiness = false, bool canWriteTechnical = false, bool canWriteOther = false)
         {
             this.Flags = 0;
             this.CanRead = canRead;
@@ -30,35 +30,35 @@ namespace AngularCrudApi.Domain.Security
         /// <summary>
         /// Can read non-sensitive template data
         /// </summary>
-        public Boolean CanRead { get => (this.Flags & 2) != 0; private set => this.Flags = (value) ? this.Flags | 2 : this.Flags & ~2; }
+        public bool CanRead { get => (this.Flags & 2) != 0; private set => this.Flags = value ? this.Flags | 2 : this.Flags & ~2; }
         /// <summary>
         /// Can change non-sensitive template data
         /// </summary>
-        public Boolean CanWrite { get => (this.Flags & 4) != 0; private set => this.Flags = (value) ? this.Flags | 4 : this.Flags & ~4; }
+        public bool CanWrite { get => (this.Flags & 4) != 0; private set => this.Flags = value ? this.Flags | 4 : this.Flags & ~4; }
         /// <summary>
         /// Can delete template data
         /// </summary>
-        public Boolean CanDelete { get => (this.Flags & 16) != 0; private set => this.Flags = (value) ? this.Flags | 16 : this.Flags & ~16; }
+        public bool CanDelete { get => (this.Flags & 16) != 0; private set => this.Flags = value ? this.Flags | 16 : this.Flags & ~16; }
         /// <summary>
         /// Can read sensitive template data
         /// </summary>
-        public Boolean CanReadSensitive { get => (this.Flags & 32) != 0; private set => this.Flags = (value) ? this.Flags | 32 : this.Flags & ~32; }
+        public bool CanReadSensitive { get => (this.Flags & 32) != 0; private set => this.Flags = value ? this.Flags | 32 : this.Flags & ~32; }
         /// <summary>
         /// Can change sensitive template data
         /// </summary>
-        public Boolean CanWriteSensitive { get => (this.Flags & 64) != 0; private set => this.Flags = (value) ? this.Flags | 64 : this.Flags & ~64; }
+        public bool CanWriteSensitive { get => (this.Flags & 64) != 0; private set => this.Flags = value ? this.Flags | 64 : this.Flags & ~64; }
         /// <summary>
         /// Can change business template data
         /// </summary>
-        public Boolean CanWriteBusiness { get => (this.Flags & 128) != 0; private set => this.Flags = (value) ? this.Flags | 128 : this.Flags & ~128; }
+        public bool CanWriteBusiness { get => (this.Flags & 128) != 0; private set => this.Flags = value ? this.Flags | 128 : this.Flags & ~128; }
         /// <summary>
         /// Can change technical template data
         /// </summary>
-        public Boolean CanWriteTechnical { get => (this.Flags & 256) != 0; private set => this.Flags = (value) ? this.Flags | 256 : this.Flags & ~256; }
+        public bool CanWriteTechnical { get => (this.Flags & 256) != 0; private set => this.Flags = value ? this.Flags | 256 : this.Flags & ~256; }
         /// <summary>
         /// Can change other template data
         /// </summary>
-        public Boolean CanWriteOther { get => (this.Flags & 512) != 0; private set => this.Flags = (value) ? this.Flags | 512 : this.Flags & ~512; }
+        public bool CanWriteOther { get => (this.Flags & 512) != 0; private set => this.Flags = value ? this.Flags | 512 : this.Flags & ~512; }
 
         /// <summary>
         /// Get bit encoded represenatation of access rights
