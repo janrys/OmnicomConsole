@@ -69,6 +69,8 @@ namespace AngularCrudApi.WebApi.Extensions
 
         Task<IEnumerable<Release>> IReleasesQueryBuilder.All()
             => this.mediator.Send(new ReleaseAllQuery(this.user));
+        Task<Release> IReleasesQueryBuilder.ById(int id)
+            => this.mediator.Send(new ReleaseByIdQuery(id, this.user));
 
         Task<IEnumerable<Request>> IReleasesQueryBuilder.Requests(int releaseId)
             => this.mediator.Send(new RequestByReleaseQuery(releaseId, this.user));
@@ -78,6 +80,11 @@ namespace AngularCrudApi.WebApi.Extensions
 
         Task<Release> IReleaseCommandBuilder.Create(Release release)
             => this.mediator.Send(new ReleaseCreateCommand(release, this.user));
+        Task<Release> IReleaseCommandBuilder.Update(Release release)
+            => this.mediator.Send(new ReleaseUpdateCommand(release, this.user));
+
+        Task IReleaseCommandBuilder.Delete(int id)
+            => this.mediator.Send(new ReleaseDeleteCommand(id, this.user));
 
         Task<Request> IReleaseCommandBuilder.CreateRequest(Request request)
             => this.mediator.Send(new RequestCreateCommand(request, this.user));
@@ -118,6 +125,8 @@ namespace AngularCrudApi.WebApi.Extensions
     public interface IReleaseCommandBuilder
     {
         Task<Release> Create(Release release);
+        Task<Release> Update(Release release);
+        Task Delete(int id);
         Task<Request> CreateRequest(Request request);
         Task<Request> UpdateRequest(Request request);
         Task DeleteRequest(int requestId);
@@ -136,6 +145,7 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<IEnumerable<Release>> All();
         Task<IEnumerable<Request>> Requests(int releaseId);
         Task<Request> RequestById(int id);
+        Task<Release> ById(int id);
     }
 
     public interface IUserQueryBuilder

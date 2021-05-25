@@ -28,7 +28,9 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task<Request> CreateRequest(Request request);
         Task<Request> UpdateRequest(Request request);
         Task DeleteRequest(int requestId);
+        Task DeleteRequestsByReleaseId(int releaseId);
         Task<Request> GetRequestById(int id);
+        Task<Release> GetReleaseById(int id);
     }
 
 

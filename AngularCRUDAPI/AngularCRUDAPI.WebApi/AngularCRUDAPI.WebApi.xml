@@ -118,6 +118,18 @@
             </summary>
             <returns>Release list</returns>
         </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.UpdateRelease(AngularCrudApi.Domain.Entities.Release)">
+            <summary>
+            Update request
+            </summary>
+            <returns>Updated request</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.DeleteRelease(System.Int32)">
+            <summary>
+            Update request
+            </summary>
+            <returns>Updated request</returns>
+        </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.CreateRequest(AngularCrudApi.WebApi.Models.RequestModel)">
             <summary>
             Create new request

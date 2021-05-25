@@ -92,6 +92,69 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         }
 
         /// <summary>
+        /// Update request
+        /// </summary>
+        /// <returns>Updated request</returns>
+        [ProducesResponseType(typeof(Release), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPut]
+        public async Task<IActionResult> UpdateRelease(Release release)
+        {
+            if (release == null)
+            {
+                return this.BadRequest($"Parameter {nameof(release)} is mandatory.");
+            }
+
+            Release updatedRelease = await this.Query().Release.ById(release.Id);
+
+            if (updatedRelease == null)
+            {
+                return this.NotFound();
+            }
+
+            try
+            {
+                updatedRelease = await this.Command().Release.Update(release);
+                return this.Ok(updatedRelease);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = "Error updating release";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Update request
+        /// </summary>
+        /// <returns>Updated request</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteRelease(int id)
+        {
+            Release release = await this.Query().Release.ById(id);
+
+            if (release == null)
+            {
+                return this.NotFound();
+            }
+
+            try
+            {
+                await this.Command().Release.Delete(id);
+                return this.Ok();
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = "Error deleting release";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Create new request
         /// </summary>
         /// <returns>Release list</returns>
@@ -116,6 +179,8 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 throw new Exception(errorMessage);
             }
         }
+
+
 
         /// <summary>
         /// Create new request

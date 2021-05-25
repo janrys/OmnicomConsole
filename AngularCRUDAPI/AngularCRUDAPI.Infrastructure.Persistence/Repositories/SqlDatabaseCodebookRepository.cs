@@ -233,6 +233,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
+        public async Task<Release> GetReleaseById(int id)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRelease WHERE Id = @id";
+                Release release = await sqlConnection.QueryFirstOrDefaultAsync<Release>(commandText, new { id = id });
+                return release;
+            }
+        }
+
         public async Task<IEnumerable<Request>> GetRequests(int releaseId)
         {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
@@ -408,6 +418,19 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 }
             }
         }
+
+        public async Task DeleteRequestsByReleaseId(int releaseId)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"DELETE FROM [dbo].[CodebookConsoleRequest]  WHERE [ReleaseId] = @ReleaseId";
+                int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
+                {
+                    ReleaseId = releaseId
+                });
+            }
+        }
+
 
         private class TableName
         {
