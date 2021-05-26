@@ -8,6 +8,7 @@ namespace AngularCrudApi.Domain.Entities
 {
     public class PublicCodebookUser
     {
+        public string Identifier { get; set; }
         public string Name { get; set; }
         public string Upn { get; set; }
         public List<string> Roles { get; } = new List<string>();
@@ -19,7 +20,6 @@ namespace AngularCrudApi.Domain.Entities
 
     public class CodebookUser : PublicCodebookUser
     {
-        public string Identifier { get; set; }
         public string ExternalId { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
@@ -48,6 +48,7 @@ namespace AngularCrudApi.Domain.Entities
         {
             PublicCodebookUser publicCatalogUser = new PublicCodebookUser()
             {
+                Identifier = codebookUser.Identifier,
                 Name = codebookUser.Name,
                 Upn = codebookUser.Upn,
                 AccessTokenExpiration = codebookUser.AccessTokenExpiration,
