@@ -2,6 +2,8 @@
 using AngularCrudApi.Application.Exceptions;
 using AngularCrudApi.Application.Interfaces;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
+using AngularCrudApi.Domain.Settings;
 using AngularCrudApi.WebApi.Extensions;
 using AngularCrudApi.WebApi.Models;
 using MediatR;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +24,13 @@ namespace AngularCrudApi.WebApi.Controllers.v1
     {
         private readonly ILogger<UsersController> log;
         private readonly IAuthorizationServerClient authorizationServerClient;
+        private readonly GlobalSettings globalSettings;
 
-        public UsersController(IMediator mediator, ILogger<UsersController> log, IAuthorizationServerClient authorizationServerClient) : base(mediator)
+        public UsersController(IMediator mediator, ILogger<UsersController> log, IAuthorizationServerClient authorizationServerClient, IOptions<GlobalSettings> globalSettings) : base(mediator)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             this.authorizationServerClient = authorizationServerClient ?? throw new ArgumentNullException(nameof(authorizationServerClient));
+            this.globalSettings = globalSettings?.Value ?? throw new ArgumentNullException(nameof(globalSettings));
         }
 
 
@@ -152,6 +157,30 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             }
 
             return this.Ok(codedbookUser.AsPublic());
+        }
+
+        /// <summary>
+        /// Get application metadata
+        /// </summary>
+        /// <returns>Codebook data</returns>
+        [ProducesResponseType(typeof(ApplicationMetadata), StatusCodes.Status200OK)]
+        [HttpGet("metadata")]
+        public async Task<IActionResult> Metadata()
+        {
+            try
+            {
+                ApplicationMetadata applicationMetadata = new ApplicationMetadata();
+                applicationMetadata.Environment = this.globalSettings.Environment;
+                applicationMetadata.Mode = applicationMetadata.Environment.Contains("development", StringComparison.InvariantCultureIgnoreCase) ? SystemModeEnum.RW.Name : SystemModeEnum.RO.Name;
+                await Task.CompletedTask;
+                return this.Ok(applicationMetadata);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error loading metadata";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace AngularCrudApi.Domain.Entities
             this.Name = codebookDetail.Name;
             this.Scheme = codebookDetail.Scheme;
             this.Columns.AddRange(codebookDetail.Columns);
+            this.IsEditable = codebookDetail.IsEditable;
         }
 
         public List<dynamic> Data { get; set; } = new List<object>();

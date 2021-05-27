@@ -11,6 +11,7 @@ namespace AngularCrudApi.Domain.Entities
         public string Name { get; set; }
         public string Scheme { get; set; }
         public string FullName => $"[{this.Scheme ?? "dbo"}].[{this.Name}]";
+        public bool IsEditable { get; set; }
 
     }
 }

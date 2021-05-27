@@ -188,6 +188,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.Metadata">
+            <summary>
+            Get application metadata
+            </summary>
+            <returns>Codebook data</returns>
+        </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.ExtractTokenFromHeader(System.String)">
             <summary>
             Extract token from authorization header in form of "Bearer ejfasdfasdf..."

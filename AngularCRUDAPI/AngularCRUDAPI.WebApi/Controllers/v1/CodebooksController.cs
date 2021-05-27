@@ -130,7 +130,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 throw new Exception(errorMessage);
             }
         }
-
+        
         /// <summary>
         /// Get current lock state
         /// </summary>

@@ -19,7 +19,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 {
     public class SqlDatabaseCodebookRepository : ICodebookRepository
     {
-        private const string RDS_TABLE_PREFIX = "CB";
+        public const string RDS_TABLE_PREFIX = "CB";
         private const string ADMIN_CONSOLE_TABLE_PREFIX = "CodebookConsole";
         private const string CONFIGURATION_TABLE_SCHEME = "dbo";
         private const string CONFIGURATION_TABLE_NAME = "CodebookConsoleConfiguration";
@@ -56,7 +56,6 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                List<Codebook> codebooks = new List<Codebook>();
                 string commandText = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
                 commandText += $" AND NOT TABLE_NAME like '{ADMIN_CONSOLE_TABLE_PREFIX}%'";
 
@@ -66,9 +65,14 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 }
 
                 IEnumerable<TableName> tableNames = await sqlConnection.QueryAsync<TableName>(commandText);
-                return tableNames.Select(t => (Codebook)t);
+                IEnumerable<Codebook> codebooks = tableNames.Select(t => (Codebook)t);
+                codebooks.ToList().ForEach(c=> c.IsEditable = IsCodebookEditable(c));
+
+                return codebooks;
             }
         }
+
+        public static bool IsCodebookEditable(Codebook codebook) => codebook != null && !String.IsNullOrEmpty(codebook.Name) && !codebook.Name.StartsWith(RDS_TABLE_PREFIX);
 
         public async Task<CodebookDetail> GetByName(string codebookName)
         {
@@ -99,6 +103,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                     codebookDetail.Scheme = tableColumnDetail.First().TABLE_SCHEMA;
                     codebookDetail.Columns = new List<ColumnDefinition>();
                     codebookDetail.Columns.AddRange(tableColumnDetail.Select(c => (ColumnDefinition)c));
+                    codebookDetail.IsEditable = IsCodebookEditable(codebookDetail);
                 }
 
                 return codebookDetail;
