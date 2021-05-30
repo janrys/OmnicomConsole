@@ -1,4 +1,5 @@
 ﻿using AngularCrudApi.Domain.Entities;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task DeleteRequestsByReleaseId(int releaseId);
         Task<Request> GetRequestById(int id);
         Task<Release> GetReleaseById(int id);
+        Task ApplyChanges(CodebookRecordChanges codebookRecordChanges);
     }
 
 

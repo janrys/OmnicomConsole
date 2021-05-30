@@ -25,10 +25,12 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         private const string CONFIGURATION_TABLE_NAME = "CodebookConsoleConfiguration";
         private const string CONFIGURATION_KEY_NAME_LOCK = "Lock";
         private readonly SqlDatabaseSettings settings;
+        private readonly ICommandFactory commandFactory;
         private readonly ILogger<SqlDatabaseCodebookRepository> log;
 
-        public SqlDatabaseCodebookRepository(IOptions<SqlDatabaseSettings> settings, ILogger<SqlDatabaseCodebookRepository> log)
+        public SqlDatabaseCodebookRepository(IOptions<SqlDatabaseSettings> settings, ICommandFactory commandFactory, ILogger<SqlDatabaseCodebookRepository> log)
         {
+            this.commandFactory = commandFactory ?? throw new ArgumentNullException(nameof(commandFactory));
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             this.settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
         }
@@ -436,6 +438,22 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
+        public async Task ApplyChanges(CodebookRecordChanges codebookRecordChanges)
+        {
+            String sqlCommand = this.commandFactory.GetCommand(codebookRecordChanges);
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                try
+                {
+                    int affectedRows = await sqlConnection.ExecuteAsync(sqlCommand);
+                    this.log.LogInformation("Executed codebook change sql: {sqlCommand}, affected rows {affectedRows}", sqlCommand, affectedRows);
+                }
+                catch(Exception exception)
+                {
+                    this.log.LogError($"Cannot execute apply changes sql command {sqlCommand}", exception);
+                }
+            }
+        }
 
         private class TableName
         {
@@ -480,5 +498,5 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             public string Key { get; set; }
             public string Value { get; set; }
         }
-    }
+    }    
 }

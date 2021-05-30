@@ -55,6 +55,9 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<LockState> ICodeboookCommandBuilder.Unlock()
             => this.mediator.Send(new ReleaseLockCommand(this.user));
 
+        Task ICodeboookCommandBuilder.ApplyChanges(string codebookName, IEnumerable<RecordChange> recordChanges)
+            => this.mediator.Send(new CodebookApplyChangesCommand(codebookName, recordChanges, this.user));
+
         Task<CodebookUser> IUserCommandBuilder.Login(CodeGrantResponse codeGrantResponse)
             => this.mediator.Send(new UserLoginCommand(codeGrantResponse, this.user));
 
@@ -114,6 +117,7 @@ namespace AngularCrudApi.WebApi.Extensions
     {
         Task<LockState> Lock();
         Task<LockState> Unlock();
+        Task ApplyChanges(string codebookName, IEnumerable<RecordChange> recordChanges);
     }
     public interface IUserCommandBuilder
     {

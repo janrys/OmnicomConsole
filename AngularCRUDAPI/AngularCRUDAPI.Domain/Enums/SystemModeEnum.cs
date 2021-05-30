@@ -21,4 +21,6 @@ namespace AngularCrudApi.Domain.Enums
 
         public static IEnumerable<SystemModeEnum> GetAll() => GetAll<SystemModeEnum>();
     }
+
+    
 }

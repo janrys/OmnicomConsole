@@ -33,6 +33,8 @@ namespace AngularCrudApi.Infrastructure.Persistence
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
             services.AddTransient<IPositionRepositoryAsync, PositionRepositoryAsync>();
             services.AddTransient<IEmployeeRepositoryAsync, EmployeeRepositoryAsync>();
-            services.AddSingleton<ICodebookRepository, SqlDatabaseCodebookRepository>();        }
+            services.AddSingleton<ICommandFactory, SqlServerCommmandFactory>();
+            services.AddSingleton<ICodebookRepository, SqlDatabaseCodebookRepository>();        
+        }
     }
 }

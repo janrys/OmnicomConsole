@@ -25,6 +25,14 @@
             <param name="codebookName">Codebook full name</param>
             <returns>Codebook data</returns>
         </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.ChangeCodebookData(System.String,AngularCrudApi.Domain.Entities.RecordChange[])">
+            <summary>
+            Change codebook data
+            </summary>
+            <param name="codebookName">Codebook full name</param>
+            <param name="recordChanges">List of delete operations</param>
+            <returns>Codebook data</returns>
+        </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.GetLockState">
             <summary>
             Get current lock state

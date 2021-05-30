@@ -1,5 +1,6 @@
 ﻿using AngularCrudApi.Application.Exceptions;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using AngularCrudApi.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -111,6 +112,48 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         }
 
         /// <summary>
+        /// Change codebook data
+        /// </summary>
+        /// <param name="codebookName">Codebook full name</param>
+        /// <param name="recordChanges">List of delete operations</param>
+        /// <returns>Codebook data</returns>
+        [ProducesResponseType(typeof(CodebookDetailWithData), StatusCodes.Status200OK)]
+        [HttpPut("{codebookName}/data")]
+        public async Task<IActionResult> ChangeCodebookData(string codebookName, [FromBody] RecordChange[] recordChanges)
+        {
+            if (string.IsNullOrEmpty(codebookName))
+            {
+                return this.BadRequest($"Parameter {nameof(codebookName)} is mandatory");
+            }
+
+            if (recordChanges == null || !recordChanges.Any())
+            {
+                return this.BadRequest($"Parameter {nameof(recordChanges)} is mandatory");
+            }
+
+            IEnumerable<string> wrongOperations = recordChanges
+                .Where(c => !RecordChangeOperationEnum.GetAll().Any(o => o.Name.Equals(c.Operation, StringComparison.InvariantCultureIgnoreCase)))
+                .Select(c => c.Operation);
+
+            if (wrongOperations.Any())
+            {
+                return this.BadRequest($"Wrong operation values: {String.Join(", ", wrongOperations)} ");
+            }            
+
+            try
+            {
+                await this.Command().Codebook.ApplyChanges(codebookName, recordChanges);
+                return this.Ok();
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error changing codebook data {codebookName}";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Get current lock state
         /// </summary>
         /// <returns>Codebook data</returns>
@@ -130,7 +173,7 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 throw new Exception(errorMessage);
             }
         }
-        
+
         /// <summary>
         /// Get current lock state
         /// </summary>
@@ -184,6 +227,6 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 throw new Exception(errorMessage);
             }
         }
-        
+
     }
 }
