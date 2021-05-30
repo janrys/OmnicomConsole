@@ -23,7 +23,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         {
             if (recordChange.Operation.Equals(RecordChangeOperationEnum.Delete.Name, StringComparison.InvariantCultureIgnoreCase))
             {
-                return this.GetDeleteCommandText(tableFullName, columns, recordChange.RecordKey);
+                return this.GetDeleteCommandText(tableFullName, columns, recordChange.RecordKey.Value);
             }
 
             if (recordChange.Operation.Equals(RecordChangeOperationEnum.Insert.Name, StringComparison.InvariantCultureIgnoreCase))
@@ -33,7 +33,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
             if (recordChange.Operation.Equals(RecordChangeOperationEnum.Update.Name, StringComparison.InvariantCultureIgnoreCase))
             {
-                return this.GetUpdateCommandText(tableFullName, columns, recordChange.RecordKey, recordChange.RecordChanges);
+                return this.GetUpdateCommandText(tableFullName, columns, recordChange.RecordKey.Value, recordChange.RecordChanges);
             }
 
             throw new ValidationException($"Cannot generate sql command for operation type {recordChange.Operation}");
