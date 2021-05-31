@@ -30,7 +30,7 @@ namespace AngularCrudApi.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCodebooksConsoleAuthentication(this.Configuration, this.Environment, this.log);
+            services.AddCodebooksConsoleAuthentication(this.Configuration, this.Environment, () => this.log);
             services.AddApplicationLayer();
             services.AddPersistenceInfrastructure(this.Configuration);
             services.AddSharedInfrastructure(this.Configuration);

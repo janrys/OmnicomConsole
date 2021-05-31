@@ -75,9 +75,9 @@ namespace AngularCrudApi.WebApi.Helpers
             }
         }
 
-        public static Task AuthenticationFailed(Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext context, ILogger logger)
+        public static Task AuthenticationFailed(Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext context, Func<ILogger> logger)
         {
-            logger.LogWarning("Authentication failed, reason {message}, ip {ipAddress}, correlationId {correlationId}"
+            logger.Invoke().LogWarning("Authentication failed, reason {message}, ip {ipAddress}, correlationId {correlationId}"
                 , context.Exception?.Message ?? "token validation failed", context.Request.GetClientIpAddress(), context.Request.GetCorrelationId());
             return Task.CompletedTask;
         }

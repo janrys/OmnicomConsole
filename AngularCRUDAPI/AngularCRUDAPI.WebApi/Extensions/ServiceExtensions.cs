@@ -140,7 +140,7 @@ namespace AngularCrudApi.WebApi.Extensions
             }
         }
 
-        public static IServiceCollection AddCodebooksConsoleAuthentication(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment, ILogger log)
+        public static IServiceCollection AddCodebooksConsoleAuthentication(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment, Func<ILogger> logger)
         {
             services.AddSingleton<IClaimsTransformation, AzureAdScopeClaimTransformation>();
 
@@ -167,7 +167,7 @@ namespace AngularCrudApi.WebApi.Extensions
                 options.Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context => AuthenticationMessageHandler.MessageReceived(context, environment),
-                    OnAuthenticationFailed = context => AuthenticationMessageHandler.AuthenticationFailed(context, log),
+                    OnAuthenticationFailed = context => AuthenticationMessageHandler.AuthenticationFailed(context, logger),
                     OnTokenValidated = context => AuthenticationMessageHandler.TokenValidated(context)
                 };
             });
