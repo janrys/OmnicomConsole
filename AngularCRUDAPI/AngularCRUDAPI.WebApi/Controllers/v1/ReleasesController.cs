@@ -40,6 +40,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error loading releases";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -61,6 +67,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error loading requests";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -87,6 +99,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error creating release";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -121,6 +139,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error updating release";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -150,6 +174,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error deleting release";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -176,6 +206,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error creating request";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -229,6 +265,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error updating request";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -258,6 +300,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error deleting request";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }

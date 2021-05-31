@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace AngularCrudApi.Application.Exceptions
 {
-    public class ValidationException : Exception
+    public class ValidationException : ApiException
     {
         public ValidationException() : base("One or more validation failures have occurred.")
         {

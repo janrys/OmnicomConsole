@@ -41,6 +41,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = "Error loading codebooks";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -74,6 +80,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = $"Error loading codebook detail {codebookName}";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -107,6 +119,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = $"Error loading codebook detail {codebookName}";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -149,6 +167,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = $"Error changing codebook data {codebookName}";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -170,6 +194,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = $"Error loading lock state";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -197,6 +227,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = $"Error loading lock state";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }
@@ -224,6 +260,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             {
                 string errorMessage = $"Error releasing lock state";
                 this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
                 throw new Exception(errorMessage);
             }
         }

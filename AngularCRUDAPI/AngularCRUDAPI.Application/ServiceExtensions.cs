@@ -1,6 +1,7 @@
 ﻿using AngularCrudApi.Application.Helpers;
 using AngularCrudApi.Application.Interfaces;
 using AngularCrudApi.Application.Pipeline;
+using AngularCrudApi.Application.Security;
 using AngularCrudApi.Domain.Entities;
 using FluentValidation;
 using MediatR;
@@ -15,7 +16,9 @@ namespace AngularCrudApi.Application
         {
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.AddSingleton<IActionAuthorizer, ClassMapActionAuthorizer>();
             services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(PipelineAuthorization<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddScoped<IDataShapeHelper<Position>, DataShapeHelper<Position>>();
             services.AddScoped<IDataShapeHelper<Employee>, DataShapeHelper<Employee>>();

@@ -5,11 +5,16 @@ using System.Security.Claims;
 
 namespace AngularCrudApi.Application.Interfaces
 {
-    public interface IAction<TResult>
+
+    public interface IAction
     {
-        IRequest<TResult> AsRequest();
         IEnumerable<RoleEnum> AllowedRoles { get; }
         ClaimsPrincipal User { get; }
+    }
+
+    public interface IAction<TResult> : IAction
+    {
+        IRequest<TResult> AsRequest();
     }
 
 

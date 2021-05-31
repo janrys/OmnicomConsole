@@ -18,6 +18,9 @@ namespace AngularCrudApi.Application.Exceptions
         {
         }
 
+        protected ApiException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+
+
         public ApiException(string message, Exception innerException) : base(message, innerException)
         {
         }

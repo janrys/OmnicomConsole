@@ -38,15 +38,31 @@ namespace AngularCrudApi.WebApi.Middlewares
 
                 switch (error)
                 {
-                    case ApiException e:
-                        // custom application error
-                        response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        break;
-
                     case ValidationException e:
                         // custom application error
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         responseModel.Errors = e.Errors;
+                        break;
+
+                    case ForbiddenException e:
+                        // custom application error
+                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                        responseModel.Errors = new List<string>();
+
+                        responseModel.Errors.Add(e.Message);
+                        Exception currentException = e;
+
+                        while (currentException.InnerException != null)
+                        {
+                            currentException = e.InnerException;
+                            responseModel.Errors.Add(currentException.Message);
+                        }
+
+                        break;
+
+                    case ApiException e:
+                        // custom application error
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
                         break;
 
                     case KeyNotFoundException e:
