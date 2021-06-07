@@ -172,6 +172,9 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 ApplicationMetadata applicationMetadata = new ApplicationMetadata();
                 applicationMetadata.Environment = this.globalSettings.Environment;
                 applicationMetadata.Mode = applicationMetadata.Environment.Contains("development", StringComparison.InvariantCultureIgnoreCase) ? SystemModeEnum.RW.Name : SystemModeEnum.RO.Name;
+                applicationMetadata.IsImportAllowed = !applicationMetadata.Environment.Contains("development", StringComparison.InvariantCultureIgnoreCase);
+                applicationMetadata.IsExportAllowed = applicationMetadata.Environment.Contains("development", StringComparison.InvariantCultureIgnoreCase)
+                    || applicationMetadata.Environment.Contains("integration", StringComparison.InvariantCultureIgnoreCase);
                 await Task.CompletedTask;
                 return this.Ok(applicationMetadata);
             }

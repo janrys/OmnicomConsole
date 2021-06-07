@@ -1,4 +1,4 @@
-﻿using AngularCrudApi.Infrastructure.Shared.Settings;
+﻿using AngularCrudApi.Infrastructure.Persistence.Settings;
 using AngularCrudApi.WebApi.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

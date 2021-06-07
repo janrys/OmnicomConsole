@@ -39,7 +39,7 @@
             </summary>
             <returns>Codebook data</returns>
         </member>
-        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.CreateLockState">
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.CodebooksController.CreateLockState(System.Int32)">
             <summary>
             Get current lock state
             </summary>
@@ -161,6 +161,18 @@
             Update request
             </summary>
             <returns>Updated request</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.ExportPackages(System.Int32[])">
+            <summary>
+            Export packages for seleted requests
+            </summary>
+            <returns>Package file</returns>
+        </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.ImportPackages(Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            Import package with codebooks changes
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.UsersController.LogIn(System.String)">
             <summary>

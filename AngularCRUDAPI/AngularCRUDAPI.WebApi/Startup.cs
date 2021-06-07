@@ -43,7 +43,8 @@ namespace AngularCrudApi.WebApi
             services.AddApiVersioningExtension();
             // API explorer
             services.AddMvcCore()
-                .AddApiExplorer();
+                .AddApiExplorer()
+                .AddNewtonsoftJson();
             // API explorer version
             services.AddVersionedApiExplorerExtension();
             services.Configure<GlobalSettings>(this.Configuration.GetSection(GlobalSettings.CONFIGURATION_KEY));

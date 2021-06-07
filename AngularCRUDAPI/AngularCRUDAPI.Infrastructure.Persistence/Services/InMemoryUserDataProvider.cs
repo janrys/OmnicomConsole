@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AngularCrudApi.Infrastructure.Shared.Services
+namespace AngularCrudApi.Infrastructure.Persistence.Services
 {
     public class InMemoryUserDataProvider : IUserDataProvider
     {
@@ -81,7 +81,7 @@ namespace AngularCrudApi.Infrastructure.Shared.Services
 
         private Task<CodebookUser> UpsertUser(CodebookUser codebookUser, DateTime utcNow)
         {
-            if(this.codebookUsers.Any(u=>u.Identifier.Equals(codebookUser.Identifier)))
+            if (this.codebookUsers.Any(u => u.Identifier.Equals(codebookUser.Identifier)))
             {
                 CodebookUser storedUser = this.codebookUsers.First(u => u.Identifier.Equals(codebookUser.Identifier));
                 storedUser.RefreshFrom(codebookUser);

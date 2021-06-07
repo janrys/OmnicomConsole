@@ -211,12 +211,12 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         [ProducesResponseType(typeof(LockState), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [HttpPost("lock")]
-        public async Task<IActionResult> CreateLockState()
+        public async Task<IActionResult> CreateLockState(int requestId)
         {
             LockState lockState = null;
             try
             {
-                lockState = await this.Command().Codebook.Lock();
+                lockState = await this.Command().Codebook.Lock(requestId);
                 return this.Ok(lockState);
             }
             catch (ValidationException validationException)

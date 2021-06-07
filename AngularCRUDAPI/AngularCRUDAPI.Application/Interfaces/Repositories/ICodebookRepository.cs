@@ -1,4 +1,5 @@
 ﻿using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -15,12 +16,9 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
 
         public Task<CodebookDetailWithData> GetData(string codebookName);
         Task<LockState> GetLock();
-        Task<LockState> CreateLock(string userIdentifier, string userName, int releaseId, DateTime? created = null);
+        Task<LockState> CreateLock(string userIdentifier, string userName, int requestId, DateTime? created = null);
         Task<LockState> ReleaseLock(DateTime? released = null);
 
-        Task<CodebookDetailWithData> InsertData(string codebookName, int releaseId, IDictionary<string, object> values);
-        Task UpdateData(string codebookName, int releaseId, object key, IDictionary<string, object> values);
-        Task DeleteData(string codebookName, int releaseId, object key);
         Task<IEnumerable<Release>> GetAllReleases();
         Task<Release> CreateRelease(Release release);
         Task<Release> UpdateRelease(Release release);
@@ -30,9 +28,15 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task<Request> UpdateRequest(Request request);
         Task DeleteRequest(int requestId);
         Task DeleteRequestsByReleaseId(int releaseId);
-        Task<Request> GetRequestById(int id);
         Task<Release> GetReleaseById(int id);
-        Task ApplyChanges(CodebookRecordChanges codebookRecordChanges);
+        Task<IEnumerable<Release>> GetReleaseById(int[] ids);
+        Task ApplyChanges(int requestId, CodebookRecordChanges codebookRecordChanges);
+        Task<Request> GetRequestById(int id);
+        Task<IEnumerable<Request>> GetRequestById(int[] requestsId);
+        Task<IEnumerable<RequestChange>> GetRequestChanges(int[] requestsId);
+        Task<int> GetLastExportedPackageNumber();
+        Task SaveLastExportedPackageNumber(int lastPackageNumber);
+        Task UpdateRequestState(RequestStateEnum exported, int[] requestsId);
     }
 
 

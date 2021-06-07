@@ -66,7 +66,8 @@ namespace AngularCrudApi.Application.Security
             this.AddCondition<UserLoginCommand>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
             this.AddCondition<UserLoginRefreshCommand>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
             this.AddCondition<UserLogoutCommand>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
-
+            this.AddCondition<ImportPackageCommand>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.Editor, RoleEnum.SysAdmin));
+            this.AddCondition<ExportPackageCommand>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.Editor, RoleEnum.SysAdmin));
         }
 
         private bool AllowRwModeAndRoles(SystemModeEnum systemMode, ClaimsPrincipal user, params RoleEnum[] allowedRoles) => this.IsRwMode(systemMode) && this.IsUserAllowed(user, allowedRoles);

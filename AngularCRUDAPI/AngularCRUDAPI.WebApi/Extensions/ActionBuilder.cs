@@ -4,6 +4,7 @@ using AngularCrudApi.Application.Pipeline.Queries;
 using AngularCrudApi.Domain.Entities;
 using MediatR;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -49,8 +50,8 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<LockState> ICodebookQueryBuilder.Lock()
             => this.mediator.Send(new LockStateQuery(this.user));
 
-        Task<LockState> ICodeboookCommandBuilder.Lock()
-            => this.mediator.Send(new CreateLockCommand(this.user));
+        Task<LockState> ICodeboookCommandBuilder.Lock(int requestId)
+            => this.mediator.Send(new CreateLockCommand(requestId, this.user));
 
         Task<LockState> ICodeboookCommandBuilder.Unlock()
             => this.mediator.Send(new ReleaseLockCommand(this.user));
@@ -97,6 +98,13 @@ namespace AngularCrudApi.WebApi.Extensions
 
         Task IReleaseCommandBuilder.DeleteRequest(int requestId)
             => this.mediator.Send(new RequestDeleteCommand(requestId, this.user));
+
+        Task IReleaseCommandBuilder.ImportPackage(Stream stream, string fileName)
+            => this.mediator.Send(new ImportPackageCommand(stream, fileName, this.user));
+
+        Task<StreamWithName> IReleaseCommandBuilder.ExportPackage(int[] requestsId)
+            => this.mediator.Send(new ExportPackageCommand(requestsId, this.user));
+
     }
 
     public interface IQueryBuilder
@@ -115,7 +123,7 @@ namespace AngularCrudApi.WebApi.Extensions
 
     public interface ICodeboookCommandBuilder
     {
-        Task<LockState> Lock();
+        Task<LockState> Lock(int requestId);
         Task<LockState> Unlock();
         Task ApplyChanges(string codebookName, IEnumerable<RecordChange> recordChanges);
     }
@@ -134,6 +142,8 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<Request> CreateRequest(Request request);
         Task<Request> UpdateRequest(Request request);
         Task DeleteRequest(int requestId);
+        Task ImportPackage(Stream stream, string fileName);
+        Task<StreamWithName> ExportPackage(int[] requestsId);
     }
 
     public interface ICodebookQueryBuilder

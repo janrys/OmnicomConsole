@@ -8,6 +8,6 @@ namespace AngularCrudApi.Domain.Entities
         public string ForUserId { get; set; }
         public string ForUserName { get; set; }
         public DateTime Created { get; set; }
-        public int ForReleaseId { get; set; }
+        public int ForRequestId { get; set; }
     }
 }

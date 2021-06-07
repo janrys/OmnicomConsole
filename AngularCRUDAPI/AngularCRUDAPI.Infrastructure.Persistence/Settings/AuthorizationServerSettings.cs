@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AngularCrudApi.Infrastructure.Shared.Settings
+namespace AngularCrudApi.Infrastructure.Persistence.Settings
 {
     public class AuthorizationServerSettings
     {

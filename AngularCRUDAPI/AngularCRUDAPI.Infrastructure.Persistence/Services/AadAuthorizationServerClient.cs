@@ -1,6 +1,6 @@
 ﻿using AngularCrudApi.Application.DTOs;
 using AngularCrudApi.Application.Interfaces;
-using AngularCrudApi.Infrastructure.Shared.Settings;
+using AngularCrudApi.Infrastructure.Persistence.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -11,7 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AngularCrudApi.Infrastructure.Shared.Services
+namespace AngularCrudApi.Infrastructure.Persistence.Services
 {
     public class AadAuthorizationServerClient : IAuthorizationServerClient
     {
@@ -65,7 +65,7 @@ namespace AngularCrudApi.Infrastructure.Shared.Services
             return this.CallTokenEndpoint(this.GetAuthorizationRequestParams("authorization_code", code: code));
         }
 
-        private string GetAuthorizationRequestParams(string grantType, string refreshToken = null, string code = null )
+        private string GetAuthorizationRequestParams(string grantType, string refreshToken = null, string code = null)
         {
             if (string.IsNullOrEmpty(grantType))
             {
@@ -78,7 +78,7 @@ namespace AngularCrudApi.Infrastructure.Shared.Services
             {
                 return requestParams + $"&refresh_token={refreshToken}";
             }
-            else if(!string.IsNullOrEmpty(code))
+            else if (!string.IsNullOrEmpty(code))
             {
                 return requestParams + $"&code={code}";
             }

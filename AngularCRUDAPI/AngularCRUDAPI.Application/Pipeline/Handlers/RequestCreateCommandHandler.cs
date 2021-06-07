@@ -2,15 +2,17 @@
 using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Application.Pipeline.Commands;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace AngularCrudApi.Application.Pipeline.Handlers
 {
-    public class RequestCreateCommandHandler : IRequestHandler<RequestCreateCommand, Request>
+    public partial class RequestCreateCommandHandler : IRequestHandler<RequestCreateCommand, Request>
         , IRequestHandler<RequestUpdateCommand, Request>
         , IRequestHandler<RequestDeleteCommand, Unit>
     {
@@ -27,6 +29,11 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
         {
             try
             {
+                if (String.IsNullOrEmpty(request.Request.Status) || !RequestStateEnum.GetAll().Any(s=>s.Name.Equals(request.Request.Status, StringComparison.InvariantCulture)))
+                {
+                    request.Request.Status = RequestStateEnum.New.Name;
+                }
+
                 return this.codebookRepository.CreateRequest(request.Request);
             }
             catch (Exception exception)
@@ -40,6 +47,11 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
         {
             try
             {
+                if (String.IsNullOrEmpty(request.Request.Status) || !RequestStateEnum.GetAll().Any(s => s.Name.Equals(request.Request.Status, StringComparison.InvariantCulture)))
+                {
+                    request.Request.Status = RequestStateEnum.New.Name;
+                }
+
                 return this.codebookRepository.UpdateRequest(request.Request);
             }
             catch (Exception exception)

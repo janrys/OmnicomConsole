@@ -3,6 +3,7 @@ using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Infrastructure.Persistence.Contexts;
 using AngularCrudApi.Infrastructure.Persistence.Repositories;
 using AngularCrudApi.Infrastructure.Persistence.Repository;
+using AngularCrudApi.Infrastructure.Persistence.Services;
 using AngularCrudApi.Infrastructure.Persistence.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,13 +29,17 @@ namespace AngularCrudApi.Infrastructure.Persistence
             }
 
 
+            services.Configure<AuthorizationServerSettings>(configuration.GetSection(AuthorizationServerSettings.CONFIGURATION_KEY));
             services.Configure<SqlDatabaseSettings>(configuration.GetSection(SqlDatabaseSettings.CONFIGURATION_KEY));
 
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
             services.AddTransient<IPositionRepositoryAsync, PositionRepositoryAsync>();
             services.AddTransient<IEmployeeRepositoryAsync, EmployeeRepositoryAsync>();
+            services.AddSingleton<IAuthorizationServerClient, AadAuthorizationServerClient>();
+            services.AddSingleton<IUserDataProvider, InMemoryUserDataProvider>();
             services.AddSingleton<ICommandFactory, SqlServerCommmandFactory>();
-            services.AddSingleton<ICodebookRepository, SqlDatabaseCodebookRepository>();        
+            services.AddSingleton<ICodebookRepository, SqlDatabaseCodebookRepository>();
+            services.AddSingleton<IPackageManager, InMemoryFilePackageManager>();
         }
     }
 }

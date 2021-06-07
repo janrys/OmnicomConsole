@@ -58,7 +58,14 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
 
             try
             {
-                return await this.codebookRepository.CreateLock(request.User.GetIdentifier(), request.User.GetName(), 5);
+                Request storedRequest = await this.codebookRepository.GetRequestById(request.RequestId);
+
+                if(storedRequest == null)
+                {
+                    throw new ValidationException($"Request with id {request.RequestId} not found");
+                }
+
+                return await this.codebookRepository.CreateLock(request.User.GetIdentifier(), request.User.GetName(), storedRequest.Id);
             }
             catch (Exception exception)
             {

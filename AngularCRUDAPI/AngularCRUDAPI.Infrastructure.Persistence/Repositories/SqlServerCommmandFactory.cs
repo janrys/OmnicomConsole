@@ -16,7 +16,11 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
     {
         public string GetCommand(CodebookRecordChanges codebookRecordChanges)
         {
-            return string.Join(Environment.NewLine, codebookRecordChanges.Changes.Select(c => this.GetCommandText(codebookRecordChanges.FullName, codebookRecordChanges.Columns, c)));
+            codebookRecordChanges.Changes.ToList().ForEach(c => {
+                c.Command = this.GetCommandText(codebookRecordChanges.FullName, codebookRecordChanges.Columns, c);
+            });
+
+            return string.Join(Environment.NewLine, codebookRecordChanges.Changes.Select(c=>c.Command));
         }
 
         private string GetCommandText(string tableFullName, IEnumerable<ColumnDefinition> columns, RecordChange recordChange)

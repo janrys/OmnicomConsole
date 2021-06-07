@@ -1,6 +1,7 @@
 ﻿using AngularCrudApi.Application.Helpers;
 using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using AngularCrudApi.Infrastructure.Persistence.Settings;
 using Dapper;
 using Dapper.Contrib.Extensions;
@@ -68,7 +69,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
                 IEnumerable<TableName> tableNames = await sqlConnection.QueryAsync<TableName>(commandText);
                 IEnumerable<Codebook> codebooks = tableNames.Select(t => (Codebook)t);
-                codebooks.ToList().ForEach(c=> c.IsEditable = IsCodebookEditable(c));
+                codebooks.ToList().ForEach(c => c.IsEditable = IsCodebookEditable(c));
 
                 return codebooks;
             }
@@ -166,26 +167,26 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
-        public Task<LockState> CreateLock(string userIdentifier, string userName, int releaseId, DateTime? created = null)
-            => this.UpsertLock(userIdentifier, userName, releaseId, created);
+        public Task<LockState> CreateLock(string userIdentifier, string userName, int requestId, DateTime? created = null)
+            => this.UpsertLock(userIdentifier, userName, requestId, created);
 
         public Task<LockState> ReleaseLock(DateTime? released = null) => this.UpsertLock("", "");
 
-        private async Task<LockState> UpsertLock(string userIdentifier, string userName, int? releaseId = null, DateTime? created = null)
+        private async Task<LockState> UpsertLock(string userIdentifier, string userName, int? requestId = null, DateTime? created = null)
         {
             if (!created.HasValue)
             {
                 created = DateTime.UtcNow;
             }
 
-            if (!releaseId.HasValue)
+            if (!requestId.HasValue)
             {
-                releaseId = -1;
+                requestId = -1;
             }
 
             Boolean isLocked = !String.IsNullOrEmpty(userIdentifier);
 
-            LockState lockState = new LockState() { ForUserId = userIdentifier, ForUserName = userName, Created = created.Value, IsLocked = isLocked, ForReleaseId = releaseId.Value };
+            LockState lockState = new LockState() { ForUserId = userIdentifier, ForUserName = userName, Created = created.Value, IsLocked = isLocked, ForRequestId = requestId.Value };
             string lockValue = JsonConvert.SerializeObject(lockState);
 
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
@@ -203,31 +204,6 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
 
             return lockState;
-        }
-
-        public Task<CodebookDetailWithData> InsertData(string codebookName, int releaseId, IDictionary<string, object> values)
-        {
-            return Task.FromResult((CodebookDetailWithData)null);
-        }
-
-        public Task UpdateData(string codebookName, int releaseId, object key, IDictionary<string, object> values)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task DeleteData(string codebookName, int releaseId, object key)
-        {
-            return Task.CompletedTask;
-        }
-
-        private Task SaveReleaseChange(ReleaseChange releaseChange)
-        {
-            return Task.CompletedTask;
-        }
-
-        private string AssembleSqlCommand()
-        {
-            return "";
         }
 
         public async Task<IEnumerable<Release>> GetAllReleases()
@@ -250,6 +226,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
+        public async Task<IEnumerable<Release>> GetReleaseById(int[] ids)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRelease WHERE Id in @ids";
+                IEnumerable<Release> releases = await sqlConnection.QueryAsync<Release>(commandText, new { ids = ids });
+                return releases;
+            }
+        }
+
         public async Task<IEnumerable<Request>> GetRequests(int releaseId)
         {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
@@ -259,6 +245,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 return requests;
             }
         }
+       
 
         public async Task<Request> GetRequestById(int id)
         {
@@ -266,6 +253,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             {
                 string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE Id = @id";
                 Request requests = await sqlConnection.QueryFirstOrDefaultAsync<Request>(commandText, new { id = id });
+                return requests;
+            }
+        }
+
+        public async Task<IEnumerable<Request>> GetRequestById(int[] requestsId)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE Id in @ids";
+                IEnumerable<Request> requests = await sqlConnection.QueryAsync<Request>(commandText, new { ids = requestsId });
                 return requests;
             }
         }
@@ -438,7 +435,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task ApplyChanges(CodebookRecordChanges codebookRecordChanges)
+        public async Task ApplyChanges(int requestId, CodebookRecordChanges codebookRecordChanges)
         {
             String sqlCommand = this.commandFactory.GetCommand(codebookRecordChanges);
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
@@ -448,11 +445,80 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                     int affectedRows = await sqlConnection.ExecuteAsync(sqlCommand);
                     this.log.LogInformation("Executed codebook change sql: {sqlCommand}, affected rows {affectedRows}", sqlCommand, affectedRows);
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
-                    this.log.LogError($"Cannot execute apply changes sql command {sqlCommand}", exception);
+                    string errorMessage = $"Cannot execute apply changes sql command {sqlCommand}";
+                    this.log.LogError(errorMessage, exception);
+                    throw new Exception(errorMessage);
                 }
+
+                await this.SaveRequestChanges(codebookRecordChanges, requestId, sqlConnection);
             }
+        }
+
+        private async Task SaveRequestChanges(CodebookRecordChanges codebookRecordChanges, int requestId)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                await this.SaveRequestChanges(codebookRecordChanges, requestId, sqlConnection);
+            }
+        }
+
+        private async Task SaveRequestChanges(CodebookRecordChanges codebookRecordChanges, int requestId, SqlConnection openedConnection)
+        {
+            int nextSequenceNumber = await this.GetMaxSequenceNumber(requestId, openedConnection);
+            string createCommand = @"INSERT INTO [dbo].[CodebookConsoleRequestChange] ([RequestId],[SequenceNumber],[CodebookName],[ChangeType],[RecordId],[Change],[Command])
+                    VALUES (@RequestId, @SequenceNumber, @CodebookName, @ChangeType, @RecordId, @Change, @Command)";
+
+            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
+            jsonSerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+            List<RequestChange> requestChanges = new List<RequestChange>();
+            foreach (RecordChange change in codebookRecordChanges.Changes)
+            {
+                nextSequenceNumber++;
+
+                RequestChange requestChange = new RequestChange()
+                {
+                    ChangeType = change.Operation,
+                    CodebookName = codebookRecordChanges.FullName,
+                    RequestId = requestId,
+                    Change = JsonConvert.SerializeObject(change, jsonSerializerSettings),
+                    SequenceNumber = nextSequenceNumber,
+                    RecordId = change.RecordKey.HasValue ? change.RecordKey.ToString() : "",
+                    Command = change.Command
+                };
+                requestChanges.Add(requestChange);
+            }
+
+            await openedConnection.ExecuteAsync(createCommand, requestChanges);
+        }
+
+        private async Task<int> GetMaxSequenceNumber(int requestId, SqlConnection openedConnection)
+        {
+            string commandText = "SELECT Max(SequenceNumber) FROM dbo.CodebookConsoleRequestChange WHERE RequestId = @requestId";
+            int? maxSequenceNumber = await openedConnection.QueryFirstOrDefaultAsync<int?>(commandText, new { requestId = requestId });
+            return maxSequenceNumber.HasValue ? maxSequenceNumber.Value : 0;
+        }
+
+
+        public Task<IEnumerable<RequestChange>> GetRequestChanges(int[] requestsId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> GetLastExportedPackageNumber()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveLastExportedPackageNumber(int lastPackageNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateRequestState(RequestStateEnum exported, int[] requestsId)
+        {
+            throw new NotImplementedException();
         }
 
         private class TableName
@@ -498,5 +564,5 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             public string Key { get; set; }
             public string Value { get; set; }
         }
-    }    
+    }
 }

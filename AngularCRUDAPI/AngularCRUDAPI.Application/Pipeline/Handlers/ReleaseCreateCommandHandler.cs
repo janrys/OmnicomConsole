@@ -2,6 +2,7 @@
 using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Application.Pipeline.Commands;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -29,6 +30,11 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
         {
             try
             {
+                if (String.IsNullOrEmpty(request.Release.Status) || !ReleaseStateEnum.GetAll().Any(s => s.Name.Equals(request.Release.Status, StringComparison.InvariantCulture)))
+                {
+                    request.Release.Status = ReleaseStateEnum.New.Name;
+                }
+
                 return this.codebookRepository.CreateRelease(request.Release);
             }
             catch (Exception exception)
@@ -42,6 +48,11 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
         {
             try
             {
+                if (String.IsNullOrEmpty(request.Release.Status) || !ReleaseStateEnum.GetAll().Any(s => s.Name.Equals(request.Release.Status, StringComparison.InvariantCulture)))
+                {
+                    request.Release.Status = ReleaseStateEnum.New.Name;
+                }
+
                 return this.codebookRepository.UpdateRelease(request.Release);
             }
             catch (Exception exception)

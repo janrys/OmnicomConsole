@@ -48,10 +48,23 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
                     throw new ValidationException($"Wrong operation values: {String.Join(", ", wrongOperations)} ");
                 }
 
+                LockState lockState = await this.codebookRepository.GetLock();
+
+                if (lockState == null || !lockState.IsLocked)
+                {
+                    throw new ValidationException("Codebooks have to be locked to apply changes");
+                }
+
+                if (!lockState.ForUserId.Equals(request.User.GetIdentifier(),StringComparison.InvariantCultureIgnoreCase))
+                {
+                    throw new ValidationException($"Codebooks are locked for another user ({lockState.ForUserName})");
+                }
+
                 CodebookRecordChanges codebookRecordChanges = new CodebookRecordChanges(codebookDetail);
                 codebookRecordChanges.Changes.AddRange(request.RecordChanges);
 
-                await this.codebookRepository.ApplyChanges(codebookRecordChanges);
+                await this.codebookRepository.ApplyChanges(lockState.ForRequestId, codebookRecordChanges);
+
                 return Unit.Value;
             }
             catch (Exception exception)

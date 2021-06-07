@@ -1,4 +1,5 @@
-﻿using AngularCrudApi.Application.Exceptions;
+﻿using AngularCrudApi.Application.DTOs;
+using AngularCrudApi.Application.Exceptions;
 using AngularCrudApi.Domain.Entities;
 using AngularCrudApi.WebApi.Extensions;
 using AngularCrudApi.WebApi.Models;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -307,6 +309,71 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 }
 
                 throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Export packages for seleted requests
+        /// </summary>
+        /// <returns>Package file</returns>
+        [ProducesResponseType(typeof(Stream), StatusCodes.Status200OK)]
+        [HttpPost("requests/export")]
+        public async Task<IActionResult> ExportPackages([FromBody]int[] requestsId)
+        {
+            if (requestsId == null || !requestsId.Any())
+            {
+                return this.BadRequest($"Parameter {nameof(requestsId)} is mandatory.");
+            }
+
+            try
+            {
+                StreamWithName streamWithName = await this.Command().Release.ExportPackage(requestsId);
+                return this.FileForAngular(streamWithName.Stream, streamWithName.Name);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Error exporting package for requests {String.Join(", ", requestsId)}";
+                this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Import package with codebooks changes
+        /// </summary>
+        /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPost("requests/import")]
+        public async Task<IActionResult> ImportPackages(IFormFile file)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+
+                try
+                {
+                    await this.Command().Release.ImportPackage(stream, file.FileName);
+                    return this.Ok();
+                }
+                catch (Exception exception)
+                {
+                    string errorMessage = $"Error importing package";
+                    this.log.LogError(errorMessage, exception);
+
+                    if (exception is ApiException)
+                    {
+                        throw;
+                    }
+
+                    throw new Exception(errorMessage);
+                }
             }
         }
     }
