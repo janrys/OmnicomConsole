@@ -516,6 +516,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             throw new NotImplementedException();
         }
 
+        public Task<int> GetLastImportedPackageNumber()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveLastImportedPackageNumber(int lastPackageNumber)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task UpdateRequestState(RequestStateEnum exported, int[] requestsId)
         {
             throw new NotImplementedException();

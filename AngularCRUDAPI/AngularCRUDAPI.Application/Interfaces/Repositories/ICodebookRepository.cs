@@ -36,6 +36,8 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task<IEnumerable<RequestChange>> GetRequestChanges(int[] requestsId);
         Task<int> GetLastExportedPackageNumber();
         Task SaveLastExportedPackageNumber(int lastPackageNumber);
+        Task<int> GetLastImportedPackageNumber();
+        Task SaveLastImportedPackageNumber(int lastPackageNumber);
         Task UpdateRequestState(RequestStateEnum exported, int[] requestsId);
     }
 

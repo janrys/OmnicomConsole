@@ -6,6 +6,7 @@ using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Application.Pipeline.Commands;
 using AngularCrudApi.Domain.Entities;
 using AngularCrudApi.Domain.Enums;
+using AngularCrudApi.Infrastructure.Persistence.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -32,20 +33,67 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
                 this.log = log ?? throw new ArgumentNullException(nameof(log));
             }
 
-            public Task<Unit> Handle(ImportPackageCommand request, CancellationToken cancellationToken)
+            public async Task<Unit> Handle(ImportPackageCommand request, CancellationToken cancellationToken)
             {
                 try
                 {
+                    PackageContentWithCommands packageContent = await this.packageManager.ImportChanges(new StreamWithName(request.Stream, request.FileName));
 
+                    if (packageContent == null)
+                    {
+                        throw new Exception("Error reading package file");
+                    }
 
-                    return Unit.Task;
-                    //return this.codebookRepository.CreateRequest(request.Request);
+                    int lastPackageNumber = await this.codebookRepository.GetLastImportedPackageNumber();
+
+                    if (lastPackageNumber != packageContent.PackageNumber - 1)
+                    {
+                        throw new ValidationException($"Wrong package number {packageContent.PackageNumber}. Expected {lastPackageNumber + 1}");
+                    }
+
+                    if (packageContent.Requests == null || !packageContent.Requests.Any())
+                    {
+                        throw new ValidationException($"Missing list of requests");
+                    }
+
+                    if (String.IsNullOrEmpty(packageContent.Commands))
+                    {
+                        throw new ValidationException($"No commands to import");
+                    }
+
+                    await this.ImportReleases(packageContent.Requests.Select(r => r.Release).Distinct());
+                    await this.ImportRequests(packageContent.Requests);
+                    await this.ImportRequestChanges(packageContent.RequestChanges);
+                    await this.ImportCommands(packageContent.Commands);
+                    await this.codebookRepository.SaveLastImportedPackageNumber(packageContent.PackageNumber);
+
+                    return Unit.Value;
                 }
                 catch (Exception exception)
                 {
                     this.log.LogError($"Error importing package {request.FileName}", exception);
                     throw;
                 }
+            }
+
+            private Task ImportCommands(string commands)
+            {
+                throw new NotImplementedException();
+            }
+
+            private Task ImportRequestChanges(IEnumerable<RequestChange> requestChanges)
+            {
+                throw new NotImplementedException();
+            }
+
+            private Task ImportRequests(IEnumerable<Request> requests)
+            {
+                throw new NotImplementedException();
+            }
+
+            private Task ImportReleases(IEnumerable<Release> releases)
+            {
+                throw new NotImplementedException();
             }
 
             public async Task<StreamWithName> Handle(ExportPackageCommand request, CancellationToken cancellationToken)
@@ -75,7 +123,15 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
                     IEnumerable<RequestChange> requestChanges = await this.codebookRepository.GetRequestChanges(request.RequestsId);
                     int lastPackageNumber = await this.codebookRepository.GetLastExportedPackageNumber();
                     lastPackageNumber++;
-                    StreamWithName fileStream = await this.packageManager.ExportChanges(lastPackageNumber, requests, requestChanges);
+                    PackageContent packageContent = new PackageContent()
+                    {
+                        ExportDate = DateTime.UtcNow,
+                        Author = request.User.GetName(),
+                        PackageNumber = lastPackageNumber,
+                        Requests = requests,
+                        RequestChanges = requestChanges
+                    };
+                    StreamWithName fileStream = await this.packageManager.ExportChanges(packageContent);
                     await this.codebookRepository.SaveLastExportedPackageNumber(lastPackageNumber);
                     await this.codebookRepository.UpdateRequestState(RequestStateEnum.Exported, request.RequestsId);
                     return fileStream;
