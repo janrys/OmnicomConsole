@@ -8,11 +8,16 @@
     <RepositoryType>Public</RepositoryType>
     <PackageProjectUrl>https://github.com/workcontrolgit</PackageProjectUrl>
     <Version>1.1.0</Version>
+    <UserSecretsId>14c26a67-1d48-43b7-81d7-caac5cad9f4d</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>AngularCrudApi.WebApi.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>AngularCrudApi.WebApi.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +36,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+    <PackageReference Include="Serilog.Exceptions" Version="6.1.0" />
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.5.1" />
