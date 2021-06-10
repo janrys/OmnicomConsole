@@ -12,5 +12,6 @@ namespace AngularCrudApi.Domain.Settings
 
         public string Environment { get; set; }
         public string FrontendVersion { get; set; }
+        public string ApplicationInsightsInstrumentationKey { get; set; }
     }
 }

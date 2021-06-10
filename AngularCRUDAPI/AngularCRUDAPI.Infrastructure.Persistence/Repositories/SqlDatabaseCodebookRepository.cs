@@ -5,6 +5,7 @@ using AngularCrudApi.Domain.Enums;
 using AngularCrudApi.Infrastructure.Persistence.Settings;
 using Dapper;
 using Dapper.Contrib.Extensions;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,6 +29,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         private readonly SqlDatabaseSettings settings;
         private readonly ICommandFactory commandFactory;
         private readonly ILogger<SqlDatabaseCodebookRepository> log;
+        private const string SQL_RESOURCE_STRING = "https://database.windows.net/";
 
         public SqlDatabaseCodebookRepository(IOptions<SqlDatabaseSettings> settings, ICommandFactory commandFactory, ILogger<SqlDatabaseCodebookRepository> log)
         {
@@ -45,6 +47,19 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             try
             {
                 connection = this.GetSqlConnetion();
+
+                if (!String.IsNullOrEmpty(settings.IdentityId))
+                {
+                    try
+                    {
+                        connection.AccessToken = await new AzureServiceTokenProvider($"RunAs=App;AppId={settings.IdentityId}").GetAccessTokenAsync(SQL_RESOURCE_STRING);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new Exception($"Cannot get access token for identity {settings.IdentityId}", exception);
+                    }
+                }
+
                 await connection.OpenAsync(cancellationToken);
             }
             catch (Exception exception)
@@ -245,7 +260,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 return requests;
             }
         }
-       
+
 
         public async Task<Request> GetRequestById(int id)
         {
@@ -529,6 +544,25 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         public Task UpdateRequestState(RequestStateEnum exported, int[] requestsId)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<DateTime> Ping()
+        {
+            String sqlCommand = "SELECT GetDate();";
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                try
+                {
+                    DateTime serverDate = await sqlConnection.QuerySingleAsync<DateTime>(sqlCommand);
+                    return serverDate;
+                }
+                catch (Exception exception)
+                {
+                    string errorMessage = $"Cannot execute sql command {sqlCommand}";
+                    this.log.LogError(errorMessage, exception);
+                    throw new Exception(errorMessage);
+                }
+            }
         }
 
         private class TableName

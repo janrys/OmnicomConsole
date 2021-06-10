@@ -29,6 +29,7 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task DeleteRequest(int requestId);
         Task DeleteRequestsByReleaseId(int releaseId);
         Task<Release> GetReleaseById(int id);
+        Task<DateTime> Ping();
         Task<IEnumerable<Release>> GetReleaseById(int[] ids);
         Task ApplyChanges(int requestId, CodebookRecordChanges codebookRecordChanges);
         Task<Request> GetRequestById(int id);

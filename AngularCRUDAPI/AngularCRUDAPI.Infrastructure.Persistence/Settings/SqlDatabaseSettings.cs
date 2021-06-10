@@ -10,5 +10,6 @@ namespace AngularCrudApi.Infrastructure.Persistence.Settings
     {
         public const string CONFIGURATION_KEY = "SqlDatabaseSettings";
         public string ConnectionString { get; set; }
+        public string IdentityId { get; set; }
     }
 }

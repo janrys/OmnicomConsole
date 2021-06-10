@@ -1,13 +1,21 @@
-﻿using MediatR;
+﻿using AngularCrudApi.Application.Helpers;
+using AngularCrudApi.Application.Interfaces.Repositories;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AngularCrudApi.WebApi.Controllers
 {
     public class MetaController : BaseApiController
     {
-        public MetaController(IMediator mediator) : base(mediator)
+        private readonly ICodebookRepository codebookRepository;
+
+        public MetaController(IMediator mediator, ICodebookRepository codebookRepository) : base(mediator)
         {
+            this.codebookRepository = codebookRepository ?? throw new System.ArgumentNullException(nameof(codebookRepository));
         }
 
         [HttpGet("/info")]
@@ -19,6 +27,22 @@ namespace AngularCrudApi.WebApi.Controllers
             var version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
 
             return Ok($"Version: {version}, Last Updated: {lastUpdate}");
+        }
+
+        [ProducesResponseType(typeof(DateTime), StatusCodes.Status200OK)]
+        [HttpGet("/pingsql")]
+        public async Task<IActionResult> PingSql()
+        {
+            try
+            {
+                DateTime sqlServerDatetime = await this.codebookRepository.Ping();
+                return this.Ok($"Sql server OK, it's date is: {sqlServerDatetime}");
+            }
+            catch (System.Exception exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, exception.ToLogString());
+            }
+
         }
     }
 }
