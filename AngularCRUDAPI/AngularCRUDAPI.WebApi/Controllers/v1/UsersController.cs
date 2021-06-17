@@ -175,6 +175,13 @@ namespace AngularCrudApi.WebApi.Controllers.v1
                 applicationMetadata.IsImportAllowed = !applicationMetadata.Environment.Contains("development", StringComparison.InvariantCultureIgnoreCase);
                 applicationMetadata.IsExportAllowed = applicationMetadata.Environment.Contains("development", StringComparison.InvariantCultureIgnoreCase)
                     || applicationMetadata.Environment.Contains("integration", StringComparison.InvariantCultureIgnoreCase);
+
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    applicationMetadata.IsImportAllowed = true;
+                    applicationMetadata.IsExportAllowed = true;
+                }
+
                 await Task.CompletedTask;
                 return this.Ok(applicationMetadata);
             }

@@ -21,6 +21,8 @@ namespace AngularCrudApi.WebApi.Extensions
 {
     public static class ServiceExtensions
     {
+        public const string CORS_POLICY_NAME = "AllowAll";
+
         public static IServiceCollection AddSwaggerExtension(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
@@ -92,7 +94,7 @@ namespace AngularCrudApi.WebApi.Extensions
         {
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll",
+                options.AddPolicy(CORS_POLICY_NAME,
                 builder =>
                 {
                     builder.AllowAnyOrigin()

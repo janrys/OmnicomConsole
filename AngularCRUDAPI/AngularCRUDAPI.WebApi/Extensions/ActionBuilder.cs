@@ -76,6 +76,10 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<Release> IReleasesQueryBuilder.ById(int id)
             => this.mediator.Send(new ReleaseByIdQuery(id, this.user));
 
+
+        Task<PackageInfo> IReleasesQueryBuilder.LastPackage()
+            => this.mediator.Send(new LastPackageQuery(this.user));
+
         Task<IEnumerable<Request>> IReleasesQueryBuilder.Requests(int releaseId)
             => this.mediator.Send(new RequestByReleaseQuery(releaseId, this.user));
 
@@ -160,6 +164,7 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<IEnumerable<Request>> Requests(int releaseId);
         Task<Request> RequestById(int id);
         Task<Release> ById(int id);
+        Task<PackageInfo> LastPackage();
     }
 
     public interface IUserQueryBuilder

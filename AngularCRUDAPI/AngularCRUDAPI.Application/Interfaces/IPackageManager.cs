@@ -1,6 +1,5 @@
 ﻿using AngularCrudApi.Application.DTOs;
 using AngularCrudApi.Domain.Entities;
-using AngularCrudApi.Infrastructure.Persistence.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;

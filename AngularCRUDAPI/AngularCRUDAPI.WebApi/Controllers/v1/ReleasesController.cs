@@ -80,6 +80,33 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         }
 
         /// <summary>
+        /// Get information about last imported package
+        /// </summary>
+        /// <returns>Release list</returns>
+        [ProducesResponseType(typeof(PackageInfo), StatusCodes.Status200OK)]
+        [HttpGet("lastpackage")]
+        public async Task<IActionResult> GetLastImportedPackage()
+        {
+            try
+            {
+                PackageInfo package = await this.Query().Release.LastPackage();
+                return this.Ok(package);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = "Error loading last package";
+                this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Create new release
         /// </summary>
         /// <returns>Release list</returns>
@@ -350,16 +377,16 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost("requests/import")]
-        public async Task<IActionResult> ImportPackages(IFormFile file)
+        public async Task<IActionResult> ImportPackages(IFormFile packageFile)
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                await file.CopyToAsync(stream);
+                await packageFile.CopyToAsync(stream);
                 stream.Position = 0;
 
                 try
                 {
-                    await this.Command().Release.ImportPackage(stream, file.FileName);
+                    await this.Command().Release.ImportPackage(stream, packageFile.FileName);
                     return this.Ok();
                 }
                 catch (Exception exception)

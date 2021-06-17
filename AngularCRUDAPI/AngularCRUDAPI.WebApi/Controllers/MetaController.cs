@@ -38,11 +38,10 @@ namespace AngularCrudApi.WebApi.Controllers
                 DateTime sqlServerDatetime = await this.codebookRepository.Ping();
                 return this.Ok($"Sql server OK, it's date is: {sqlServerDatetime}");
             }
-            catch (System.Exception exception)
+            catch (Exception exception)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, exception.ToLogString());
             }
-
         }
     }
 }

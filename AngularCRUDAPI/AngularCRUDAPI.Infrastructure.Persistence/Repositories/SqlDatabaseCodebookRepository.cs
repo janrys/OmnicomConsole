@@ -26,6 +26,9 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         private const string CONFIGURATION_TABLE_SCHEME = "dbo";
         private const string CONFIGURATION_TABLE_NAME = "CodebookConsoleConfiguration";
         private const string CONFIGURATION_KEY_NAME_LOCK = "Lock";
+        private const string CONFIGURATION_KEY_LAST_IMPORTED_PACKAGE = "LastImportedPackage";
+        private const string CONFIGURATION_KEY_LAST_EXPORTED_PACKAGE = "LastExportedPackage";
+        private const int DEFAULT_FIRST_IMPORT_PACKAGE_NUMBER = 0;
         private readonly SqlDatabaseSettings settings;
         private readonly ICommandFactory commandFactory;
         private readonly ILogger<SqlDatabaseCodebookRepository> log;
@@ -163,23 +166,18 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
         public async Task<LockState> GetLock()
         {
-            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            Configuration configuration = await this.GetConfiguration(CONFIGURATION_KEY_NAME_LOCK); LockState lockState;
+
+            if (configuration == null || String.IsNullOrEmpty(configuration.Value))
             {
-                string commandText = $"SELECT * FROM {this.ConfigurationTableFullName} WHERE [Key] = @keyName";
-                Configuration configuration = await sqlConnection.QueryFirstOrDefaultAsync<Configuration>(commandText, new { keyName = CONFIGURATION_KEY_NAME_LOCK });
-
-                LockState lockState;
-                if (configuration == null || String.IsNullOrEmpty(configuration.Value))
-                {
-                    lockState = new LockState() { IsLocked = false, ForUserId = "", ForUserName = "" };
-                }
-                else
-                {
-                    lockState = JsonConvert.DeserializeObject<LockState>(configuration.Value);
-                }
-
-                return lockState;
+                lockState = new LockState() { IsLocked = false, ForUserId = "", ForUserName = "" };
             }
+            else
+            {
+                lockState = JsonConvert.DeserializeObject<LockState>(configuration.Value);
+            }
+
+            return lockState;
         }
 
         public Task<LockState> CreateLock(string userIdentifier, string userName, int requestId, DateTime? created = null)
@@ -203,7 +201,12 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
             LockState lockState = new LockState() { ForUserId = userIdentifier, ForUserName = userName, Created = created.Value, IsLocked = isLocked, ForRequestId = requestId.Value };
             string lockValue = JsonConvert.SerializeObject(lockState);
+            await this.UpsertConfiguration(CONFIGURATION_KEY_NAME_LOCK, lockValue);
+            return lockState;
+        }
 
+        private async Task UpsertConfiguration(string key, string value)
+        {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
                 StringBuilder upsertCommand = new StringBuilder();
@@ -215,10 +218,18 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 upsertCommand.AppendLine("END");
                 upsertCommand.AppendLine("COMMIT TRANSACTION;");
 
-                await sqlConnection.ExecuteAsync(upsertCommand.ToString(), new { key = CONFIGURATION_KEY_NAME_LOCK, value = lockValue });
+                await sqlConnection.ExecuteAsync(upsertCommand.ToString(), new { key = key, value = value });
             }
+        }
 
-            return lockState;
+        private async Task<Configuration> GetConfiguration(string key)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = $"SELECT * FROM {this.ConfigurationTableFullName} WHERE [Key] = @key";
+                Configuration configuration = await sqlConnection.QueryFirstOrDefaultAsync<Configuration>(commandText, new { key });
+                return configuration;
+            }
         }
 
         public async Task<IEnumerable<Release>> GetAllReleases()
@@ -521,24 +532,38 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<int> GetLastExportedPackageNumber()
+        public async Task<int> GetLastExportedPackageNumber()
         {
-            throw new NotImplementedException();
+            Configuration configuration = await this.GetConfiguration(CONFIGURATION_KEY_LAST_EXPORTED_PACKAGE);
+
+            if (configuration == null || string.IsNullOrEmpty(configuration.Value) || !Int32.TryParse(configuration.Value, out int packageNumber))
+            {
+                return DEFAULT_FIRST_IMPORT_PACKAGE_NUMBER;
+            }
+
+            return packageNumber;
         }
 
         public Task SaveLastExportedPackageNumber(int lastPackageNumber)
         {
-            throw new NotImplementedException();
+            return this.UpsertConfiguration(CONFIGURATION_KEY_LAST_EXPORTED_PACKAGE, lastPackageNumber.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        public Task<int> GetLastImportedPackageNumber()
+        public async Task<int> GetLastImportedPackageNumber()
         {
-            throw new NotImplementedException();
+            Configuration configuration = await this.GetConfiguration(CONFIGURATION_KEY_LAST_IMPORTED_PACKAGE);
+
+            if (configuration == null || string.IsNullOrEmpty(configuration.Value) || !Int32.TryParse(configuration.Value, out int packageNumber))
+            {
+                return DEFAULT_FIRST_IMPORT_PACKAGE_NUMBER;
+            }
+
+            return packageNumber;
         }
 
         public Task SaveLastImportedPackageNumber(int lastPackageNumber)
         {
-            throw new NotImplementedException();
+            return this.UpsertConfiguration(CONFIGURATION_KEY_LAST_IMPORTED_PACKAGE, lastPackageNumber.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
         public Task UpdateRequestState(RequestStateEnum exported, int[] requestsId)
@@ -559,8 +584,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 catch (Exception exception)
                 {
                     string errorMessage = $"Cannot execute sql command {sqlCommand}";
+
+                    Exception innerException = exception.InnerException;
+                    while (innerException != null)
+                    {
+                        errorMessage += $"; inner exception: {innerException.Message}";
+                        innerException = innerException.InnerException;
+                    }
+
                     this.log.LogError(errorMessage, exception);
-                    throw new Exception(errorMessage);
+                    throw new Exception(errorMessage, exception);
                 }
             }
         }

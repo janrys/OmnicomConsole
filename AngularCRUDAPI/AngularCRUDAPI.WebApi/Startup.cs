@@ -74,7 +74,7 @@ namespace AngularCrudApi.WebApi
             app.UseHttpsRedirection();
             app.UseRouting();
             //Enable CORS
-            app.UseCors("AllowAll");
+            app.UseCors(Extensions.ServiceExtensions.CORS_POLICY_NAME);
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseSwaggerExtension();
@@ -83,7 +83,7 @@ namespace AngularCrudApi.WebApi
 
             app.UseEndpoints(endpoints =>
              {
-                 endpoints.MapControllers();
+                 endpoints.MapControllers().RequireCors(Extensions.ServiceExtensions.CORS_POLICY_NAME);
              });
         }
     }

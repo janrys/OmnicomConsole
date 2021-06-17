@@ -13,4 +13,6 @@ namespace AngularCrudApi.Application.Pipeline.Queries
 
         public int Id { get; }
     }
+
+    
 }

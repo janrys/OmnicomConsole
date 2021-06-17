@@ -4,9 +4,9 @@ using AngularCrudApi.Application.Helpers;
 using AngularCrudApi.Application.Interfaces;
 using AngularCrudApi.Application.Interfaces.Repositories;
 using AngularCrudApi.Application.Pipeline.Commands;
+using AngularCrudApi.Application.Pipeline.Queries;
 using AngularCrudApi.Domain.Entities;
 using AngularCrudApi.Domain.Enums;
-using AngularCrudApi.Infrastructure.Persistence.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -21,6 +21,8 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
     {
         public class PackageCommandHandler : IRequestHandler<ImportPackageCommand, Unit>
         , IRequestHandler<ExportPackageCommand, StreamWithName>
+        , IRequestHandler<LastPackageQuery, PackageInfo>
+
         {
             private readonly ICodebookRepository codebookRepository;
             private readonly IPackageManager packageManager;
@@ -143,6 +145,20 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
                 }
             }
 
+            public async Task<PackageInfo> Handle(LastPackageQuery request, CancellationToken cancellationToken)
+            {
+                try
+                {
+                    int lastPackageNumber = await this.codebookRepository.GetLastImportedPackageNumber();
+
+                    return new PackageInfo() { PackageNumber = lastPackageNumber };
+                }
+                catch(Exception exception)
+                {
+                    this.log.LogError($"Error loading last package info", exception);
+                    throw;
+                }
+            }
         }
     }
 }

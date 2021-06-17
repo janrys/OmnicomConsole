@@ -120,6 +120,12 @@
             </summary>
             <returns>Release list</returns>
         </member>
+        <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.GetLastImportedPackage">
+            <summary>
+            Get information about last imported package
+            </summary>
+            <returns>Release list</returns>
+        </member>
         <member name="M:AngularCrudApi.WebApi.Controllers.v1.ReleasesController.CreateRelease(AngularCrudApi.Domain.Entities.Release)">
             <summary>
             Create new release

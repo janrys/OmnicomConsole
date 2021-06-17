@@ -50,6 +50,7 @@ namespace AngularCrudApi.Application.Security
             this.AddCondition<RequestByIdQuery>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
             this.AddCondition<RequestByReleaseQuery>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
             this.AddCondition<UserByTokenQuery>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
+            this.AddCondition<LastPackageQuery>((action, systemMode) => this.IsUserAllowed(action.User, RoleEnum.GetAll()));
         }
 
         private void AddCommands()
