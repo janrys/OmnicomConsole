@@ -26,6 +26,15 @@ namespace AngularCrudApi.WebApi.Middlewares
             context.Request.Headers.AddCorrelationId(correlationId);
             context.Response.Headers.AddCorrelationId(correlationId);
 
+            if (context.Response.Headers.ContainsKey(EXPOSE_HEADER_NAME))
+            {
+                context.Response.Headers[EXPOSE_HEADER_NAME] += $"{CodebookRequestExtensions.CORRELATION_ID_HEADER_NAME},x-filename,Content-Disposition";
+            }
+            else
+            {
+                context.Response.Headers.Add(EXPOSE_HEADER_NAME, $"{CodebookRequestExtensions.CORRELATION_ID_HEADER_NAME},x-filename,Content-Disposition");
+            }
+
             try
             {
                 await _next(context);

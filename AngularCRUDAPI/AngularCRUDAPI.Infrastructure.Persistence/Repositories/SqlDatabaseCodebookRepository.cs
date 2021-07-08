@@ -288,7 +288,31 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
                 string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE Id in @ids";
+
                 IEnumerable<Request> requests = await sqlConnection.QueryAsync<Request>(commandText, new { ids = requestsId });
+                return requests;
+            }
+        }
+
+        public async Task<IEnumerable<Request>> GetRequestByReleaseId(int[] releaseIds, RequestStateEnum state = null)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE ReleaseId in @releaseIds";
+
+                IEnumerable<Request> requests;
+                if (state == null)
+                {
+                    var sqlParam = new { releaseIds = releaseIds };
+                    requests = await sqlConnection.QueryAsync<Request>(commandText, sqlParam);
+                }
+                else
+                {
+                    commandText += " AND Status = @status";
+                    var sqlParam = new { releaseIds = releaseIds, status = state.Name };
+                    requests = await sqlConnection.QueryAsync<Request>(commandText, sqlParam);
+                }
+
                 return requests;
             }
         }
@@ -527,9 +551,15 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         }
 
 
-        public Task<IEnumerable<RequestChange>> GetRequestChanges(int[] requestsId)
+        public async Task<IEnumerable<RequestChange>> GetRequestChanges(int[] requestsId)
         {
-            throw new NotImplementedException();
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string commandText = "SELECT * FROM dbo.CodebookConsoleRequestChange WHERE RequestId in @requestIds";
+
+                IEnumerable<RequestChange> requestsChanges = await sqlConnection.QueryAsync<RequestChange>(commandText, new { requestIds = requestsId });
+                return requestsChanges;
+            }
         }
 
         public async Task<int> GetLastExportedPackageNumber()
@@ -566,9 +596,35 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             return this.UpsertConfiguration(CONFIGURATION_KEY_LAST_IMPORTED_PACKAGE, lastPackageNumber.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        public Task UpdateRequestState(RequestStateEnum exported, int[] requestsId)
+        public async Task UpdateRequestState(RequestStateEnum state, int[] requestsId, Boolean? wasExported)
         {
-            throw new NotImplementedException();
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            if (requestsId == null || !requestsId.Any())
+            {
+                throw new ArgumentNullException(nameof(requestsId));
+            }
+
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                string createCommand = @"UPDATE [dbo].[CodebookConsoleRequest]
+                    SET [Status] = @Status"
+                    + (wasExported.HasValue ? ", WasExported = @WasExported " : Environment.NewLine)
+                    + "WHERE [Id] IN @Ids";
+
+                if (wasExported.HasValue)
+                {
+                    await sqlConnection.ExecuteAsync(createCommand, new { Status = state.Name, Ids = requestsId, WasExported = wasExported.Value ? 1 : 0 });
+                }
+                else
+                {
+                    await sqlConnection.ExecuteAsync(createCommand, new { Status = state.Name, Ids = requestsId });
+                }
+
+            }
         }
 
         public async Task<DateTime> Ping()

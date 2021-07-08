@@ -11,7 +11,7 @@ namespace AngularCrudApi.WebApi.Extensions
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Printnet.CodebooksConsole.WebApi");
+                c.SwaggerEndpoint("v1/swagger.json", "Printnet.CodebooksConsole.WebApi");
             });
         }
 

@@ -2,6 +2,7 @@
 using AngularCrudApi.Application.Pipeline.Commands;
 using AngularCrudApi.Application.Pipeline.Queries;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using MediatR;
 using System.Collections.Generic;
 using System.IO;
@@ -85,6 +86,10 @@ namespace AngularCrudApi.WebApi.Extensions
 
         Task<Request> IReleasesQueryBuilder.RequestById(int id)
             => this.mediator.Send(new RequestByIdQuery(id, this.user));
+        Task<IEnumerable<Release>> IReleasesQueryBuilder.ByState(ReleaseStateEnum releaseState)
+            => this.mediator.Send(new ReleasesByStateQuery(releaseState, this.user));
+        Task<IEnumerable<Request>> IReleasesQueryBuilder.RequestsByFilter(int[] releaseIds, RequestStateEnum requestState)
+            => this.mediator.Send(new RequestsByFilterQuery(releaseIds, requestState, this.user));
 
         Task<Release> IReleaseCommandBuilder.Create(Release release)
             => this.mediator.Send(new ReleaseCreateCommand(release, this.user));
@@ -165,6 +170,8 @@ namespace AngularCrudApi.WebApi.Extensions
         Task<Request> RequestById(int id);
         Task<Release> ById(int id);
         Task<PackageInfo> LastPackage();
+        Task<IEnumerable<Release>> ByState(ReleaseStateEnum releaseState);
+        Task<IEnumerable<Request>> RequestsByFilter(int[] releaseIds, RequestStateEnum requestState);
     }
 
     public interface IUserQueryBuilder

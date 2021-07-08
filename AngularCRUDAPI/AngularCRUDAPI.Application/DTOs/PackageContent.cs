@@ -14,6 +14,6 @@ namespace AngularCrudApi.Application.DTOs
         public IEnumerable<Request> Requests { get; set; }
         public IEnumerable<RequestChange> RequestChanges { get; set; }
 
-        public List<string> Files { get; set; }
+        public List<string> Files { get; set; } = new List<string>();
     }
 }

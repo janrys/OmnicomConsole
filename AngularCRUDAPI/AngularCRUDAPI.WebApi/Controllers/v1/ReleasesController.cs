@@ -1,6 +1,7 @@
 ﻿using AngularCrudApi.Application.DTOs;
 using AngularCrudApi.Application.Exceptions;
 using AngularCrudApi.Domain.Entities;
+using AngularCrudApi.Domain.Enums;
 using AngularCrudApi.WebApi.Extensions;
 using AngularCrudApi.WebApi.Models;
 using MediatR;
@@ -31,11 +32,50 @@ namespace AngularCrudApi.WebApi.Controllers.v1
         /// <returns>Release list</returns>
         [ProducesResponseType(typeof(IEnumerable<Release>), StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetReleases()
         {
             try
             {
                 IEnumerable<Release> releases = await this.Query().Release.All();
+                return this.Ok(releases);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = "Error loading releases";
+                this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Get list of releases by state
+        /// </summary>
+        /// <returns>Release list</returns>
+        [ProducesResponseType(typeof(IEnumerable<Release>), StatusCodes.Status200OK)]
+        [HttpGet("state")]
+        public async Task<IActionResult> GetReleasesWithState(string state)
+        {
+            if(string.IsNullOrEmpty(state))
+            {
+                state = ReleaseStateEnum.New.Name;
+            }
+
+            ReleaseStateEnum releaseState = ReleaseStateEnum.GetAll().FirstOrDefault(s => s.Name.Equals(state, StringComparison.InvariantCultureIgnoreCase));
+
+            if (releaseState == null)
+            {
+                releaseState = ReleaseStateEnum.New;
+            }
+
+            try
+            {
+                IEnumerable<Release> releases = await this.Query().Release.ByState(releaseState);
                 return this.Ok(releases);
             }
             catch (Exception exception)
@@ -63,6 +103,35 @@ namespace AngularCrudApi.WebApi.Controllers.v1
             try
             {
                 IEnumerable<Request> requests = await this.Query().Release.Requests(releaseId);
+                return this.Ok(requests);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = "Error loading requests";
+                this.log.LogError(errorMessage, exception);
+
+                if (exception is ApiException)
+                {
+                    throw;
+                }
+
+                throw new Exception(errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Get list of releases
+        /// </summary>
+        /// <returns>Release list</returns>
+        [ProducesResponseType(typeof(IEnumerable<Request>), StatusCodes.Status200OK)]
+        [HttpGet("requests")]
+        public async Task<IActionResult> GetRequestsByFilter([FromQuery]int[] releaseIds = null, [FromQuery] string state = null)
+        {
+            RequestStateEnum requestState = RequestStateEnum.GetAll().FirstOrDefault(s => s.Name.Equals(state, StringComparison.InvariantCultureIgnoreCase));
+
+            try
+            {
+                IEnumerable<Request> requests = await this.Query().Release.RequestsByFilter(releaseIds, requestState);
                 return this.Ok(requests);
             }
             catch (Exception exception)

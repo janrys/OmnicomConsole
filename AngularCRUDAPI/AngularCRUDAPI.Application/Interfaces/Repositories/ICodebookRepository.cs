@@ -34,12 +34,13 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task ApplyChanges(int requestId, CodebookRecordChanges codebookRecordChanges);
         Task<Request> GetRequestById(int id);
         Task<IEnumerable<Request>> GetRequestById(int[] requestsId);
+        Task<IEnumerable<Request>> GetRequestByReleaseId(int[] releaseIds, RequestStateEnum state = null);
         Task<IEnumerable<RequestChange>> GetRequestChanges(int[] requestsId);
         Task<int> GetLastExportedPackageNumber();
         Task SaveLastExportedPackageNumber(int lastPackageNumber);
         Task<int> GetLastImportedPackageNumber();
         Task SaveLastImportedPackageNumber(int lastPackageNumber);
-        Task UpdateRequestState(RequestStateEnum exported, int[] requestsId);
+        Task UpdateRequestState(RequestStateEnum state, int[] requestsId, Boolean? wasExported);
     }
 
 

@@ -12,6 +12,7 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
 {
     public class RequestByReleaseQueryHandler : IRequestHandler<RequestByReleaseQuery, IEnumerable<Request>>
         , IRequestHandler<RequestByIdQuery, Request>
+        , IRequestHandler<RequestsByFilterQuery, IEnumerable<Request>>
     {
         private readonly ICodebookRepository codebookRepository;
         private readonly ILogger<RequestByReleaseQueryHandler> log;
@@ -44,6 +45,19 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
             catch (Exception exception)
             {
                 this.log.LogError($"Error loading request by id {request.Id}", exception);
+                throw;
+            }
+        }
+
+        public Task<IEnumerable<Request>> Handle(RequestsByFilterQuery request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return this.codebookRepository.GetRequestByReleaseId(request.ReleaseIds, request.RequestState);
+            }
+            catch (Exception exception)
+            {
+                this.log.LogError($"Error loading requests by filter {String.Join(", ", request.ReleaseIds)} and state {request.RequestState}", exception);
                 throw;
             }
         }
