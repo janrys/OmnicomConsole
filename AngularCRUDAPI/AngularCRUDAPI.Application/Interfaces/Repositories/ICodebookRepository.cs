@@ -32,6 +32,7 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task<DateTime> Ping();
         Task<IEnumerable<Release>> GetReleaseById(int[] ids);
         Task ApplyChanges(int requestId, CodebookRecordChanges codebookRecordChanges);
+        Task ApplyChanges(string commands);
         Task<Request> GetRequestById(int id);
         Task<IEnumerable<Request>> GetRequestById(int[] requestsId);
         Task<IEnumerable<Request>> GetRequestByReleaseId(int[] releaseIds, RequestStateEnum state = null);
@@ -41,6 +42,10 @@ namespace AngularCrudApi.Application.Interfaces.Repositories
         Task<int> GetLastImportedPackageNumber();
         Task SaveLastImportedPackageNumber(int lastPackageNumber);
         Task UpdateRequestState(RequestStateEnum state, int[] requestsId, Boolean? wasExported);
+        
+        Task UpsertRequestChanges(IEnumerable<RequestChange> requestChanges);
+        Task UpsertRequests(IEnumerable<Request> requests, bool v);
+        Task UpsertReleases(IEnumerable<Release> releases, bool v);
     }
 
 

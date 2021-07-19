@@ -256,10 +256,15 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                string commandText = "SELECT * FROM dbo.CodebookConsoleRelease WHERE Id in @ids";
-                IEnumerable<Release> releases = await sqlConnection.QueryAsync<Release>(commandText, new { ids = ids });
-                return releases;
+                return await this.GetReleaseById(ids, sqlConnection);
             }
+        }
+
+        private async Task<IEnumerable<Release>> GetReleaseById(int[] ids, SqlConnection sqlConnection)
+        {
+            string commandText = "SELECT * FROM dbo.CodebookConsoleRelease WHERE Id in @ids";
+            IEnumerable<Release> releases = await sqlConnection.QueryAsync<Release>(commandText, new { ids = ids });
+            return releases;
         }
 
         public async Task<IEnumerable<Request>> GetRequests(int releaseId)
@@ -287,11 +292,15 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
         {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE Id in @ids";
-
-                IEnumerable<Request> requests = await sqlConnection.QueryAsync<Request>(commandText, new { ids = requestsId });
-                return requests;
+                return await this.GetRequestById(requestsId, sqlConnection);
             }
+        }
+
+        private async Task<IEnumerable<Request>> GetRequestById(int[] requestsId, SqlConnection sqlConnection)
+        {
+            string commandText = "SELECT * FROM dbo.CodebookConsoleRequest WHERE Id in @ids";
+            IEnumerable<Request> requests = await sqlConnection.QueryAsync<Request>(commandText, new { ids = requestsId });
+            return requests;
         }
 
         public async Task<IEnumerable<Request>> GetRequestByReleaseId(int[] releaseIds, RequestStateEnum state = null)
@@ -326,18 +335,49 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                string createCommand = @"INSERT INTO [dbo].[CodebookConsoleRelease] ([Name], [Date], [Version], [Status])
+                return await this.CreateRelease(release, false, sqlConnection);
+            }
+        }
+
+        private async Task<Release> CreateRelease(Release release, bool forceIdentity, SqlConnection sqlConnection)
+        {
+            if (release == null)
+            {
+                throw new ArgumentNullException(nameof(release));
+            }
+
+            string createCommand = (forceIdentity)
+                ? @"INSERT INTO [dbo].[CodebookConsoleRelease] ([Id], [Name], [Date], [Version], [Status])
+                    OUTPUT INSERTED.Id
+                    VALUES (@Id, @Name, @Date, @Version, @Status)"
+                : @"INSERT INTO [dbo].[CodebookConsoleRelease] ([Name], [Date], [Version], [Status])
                     OUTPUT INSERTED.Id
                     VALUES (@Name, @Date, @Version, @Status)";
-                int insertedID = await sqlConnection.QuerySingleAsync<int>(createCommand, new
+
+            if (forceIdentity)
+            {
+                createCommand = this.GetCommandSetIdentityInsert("[dbo].[CodebookConsoleRelease]", true) + Environment.NewLine
+                    + createCommand + Environment.NewLine
+                    + this.GetCommandSetIdentityInsert("[dbo].[CodebookConsoleRelease]", false);
+            }
+
+            int insertedID = (forceIdentity)
+                ? await sqlConnection.QuerySingleAsync<int>(createCommand, new
+                {
+                    release.Id,
+                    release.Name,
+                    release.Date,
+                    release.Version,
+                    release.Status
+                })
+                : await sqlConnection.QuerySingleAsync<int>(createCommand, new
                 {
                     release.Name,
                     release.Date,
                     release.Version,
                     release.Status
                 });
-                release.Id = insertedID;
-            }
+            release.Id = insertedID;
 
             return release;
         }
@@ -375,6 +415,26 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             return release;
         }
 
+        public async Task UpsertReleases(IEnumerable<Release> releases, bool forceIdentity)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                IEnumerable<Release> storedReleases = await this.GetReleaseById(releases.Select(r => r.Id).ToArray(), sqlConnection);
+
+                foreach (Release release in releases)
+                {
+                    if (storedReleases.Any(r => r.Id == release.Id))
+                    {
+                        await this.UpdateRelease(release);
+                    }
+                    else
+                    {
+                        await this.CreateRelease(release, true, sqlConnection);
+                    }
+                }
+            }
+        }
+
         public async Task DeleteRelease(int releaseId)
         {
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
@@ -401,10 +461,44 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                string createCommand = @"INSERT INTO [dbo].[CodebookConsoleRequest] ([Name], [SequenceNumber], [Description], [Status], [ReleaseId], [WasExported])
+                return await this.CreateRequest(request, false, sqlConnection);
+            }
+        }
+
+        private async Task<Request> CreateRequest(Request request, bool forceIdentity, SqlConnection sqlConnection)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            string createCommand = (forceIdentity)
+                ? @"INSERT INTO [dbo].[CodebookConsoleRequest] ([Id], [Name], [SequenceNumber], [Description], [Status], [ReleaseId], [WasExported])
+                    OUTPUT INSERTED.Id
+                    VALUES (@Id, @Name, @SequenceNumber, @Description, @Status, @ReleaseId, @WasExported)"
+                : @"INSERT INTO [dbo].[CodebookConsoleRequest] ([Name], [SequenceNumber], [Description], [Status], [ReleaseId], [WasExported])
                     OUTPUT INSERTED.Id
                     VALUES (@Name, @SequenceNumber, @Description, @Status, @ReleaseId, @WasExported)";
-                int insertedID = await sqlConnection.QuerySingleAsync<int>(createCommand, new
+
+            if (forceIdentity)
+            {
+                createCommand = this.GetCommandSetIdentityInsert("[dbo].[CodebookConsoleRequest]", true) + Environment.NewLine
+                    + createCommand + Environment.NewLine
+                    + this.GetCommandSetIdentityInsert("[dbo].[CodebookConsoleRequest]", false);
+            }
+
+            int insertedID = (forceIdentity)
+                ? await sqlConnection.QuerySingleAsync<int>(createCommand, new
+                {
+                    request.Id,
+                    request.Name,
+                    request.SequenceNumber,
+                    request.Description,
+                    request.Status,
+                    request.ReleaseId,
+                    request.WasExported
+                })
+                : await sqlConnection.QuerySingleAsync<int>(createCommand, new
                 {
                     request.Name,
                     request.SequenceNumber,
@@ -413,10 +507,29 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                     request.ReleaseId,
                     request.WasExported
                 });
-                request.Id = insertedID;
-            }
+            request.Id = insertedID;
 
             return request;
+        }
+
+        public async Task UpsertRequests(IEnumerable<Request> requests, bool forceIdentity)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                IEnumerable<Request> storedRequests = await this.GetRequestById(requests.Select(r => r.Id).ToArray(), sqlConnection);
+
+                foreach (Request request in requests)
+                {
+                    if (storedRequests.Any(r => r.Id == request.Id))
+                    {
+                        await this.UpdateRequest(request, sqlConnection);
+                    }
+                    else
+                    {
+                        await this.CreateRequest(request, true, sqlConnection);
+                    }
+                }
+            }
         }
 
         public async Task<Request> UpdateRequest(Request request)
@@ -428,7 +541,18 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                string createCommand = @"UPDATE [dbo].[CodebookConsoleRequest]
+                return await this.UpdateRequest(request, sqlConnection);
+            }
+        }
+
+        private async Task<Request> UpdateRequest(Request request, SqlConnection sqlConnection)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            string createCommand = @"UPDATE [dbo].[CodebookConsoleRequest]
                     SET [Name] = @Name, 
                         [SequenceNumber] = @SequenceNumber, 
                         [Description] = @Description,
@@ -436,21 +560,20 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                         [ReleaseId] = @ReleaseId,
                         [WasExported] = @WasExported
                     WHERE [Id] = @Id";
-                int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
-                {
-                    request.Id,
-                    request.Name,
-                    request.SequenceNumber,
-                    request.Description,
-                    request.Status,
-                    request.ReleaseId,
-                    request.WasExported
-                });
+            int affectedRows = await sqlConnection.ExecuteAsync(createCommand, new
+            {
+                request.Id,
+                request.Name,
+                request.SequenceNumber,
+                request.Description,
+                request.Status,
+                request.ReleaseId,
+                request.WasExported
+            });
 
-                if (affectedRows != 1)
-                {
-                    this.log.LogWarning($"Update affected {affectedRows} rows, but should be just one. Request {request.ToLogString()}");
-                }
+            if (affectedRows != 1)
+            {
+                this.log.LogWarning($"Update affected {affectedRows} rows, but should be just one. Request {request.ToLogString()}");
             }
 
             return request;
@@ -490,19 +613,31 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             String sqlCommand = this.commandFactory.GetCommand(codebookRecordChanges);
             using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
             {
-                try
-                {
-                    int affectedRows = await sqlConnection.ExecuteAsync(sqlCommand);
-                    this.log.LogInformation("Executed codebook change sql: {sqlCommand}, affected rows {affectedRows}", sqlCommand, affectedRows);
-                }
-                catch (Exception exception)
-                {
-                    string errorMessage = $"Cannot execute apply changes sql command {sqlCommand}";
-                    this.log.LogError(errorMessage, exception);
-                    throw new Exception(errorMessage);
-                }
-
+                await this.ApplyChanges(sqlCommand, sqlConnection);
                 await this.SaveRequestChanges(codebookRecordChanges, requestId, sqlConnection);
+            }
+        }
+
+        public async Task ApplyChanges(string commands)
+        {
+            using (SqlConnection sqlConnection = await this.GetOpenedSqlConnetion())
+            {
+                await this.ApplyChanges(commands, sqlConnection);
+            }
+        }
+
+        public async Task ApplyChanges(string commands, SqlConnection sqlConnection)
+        {
+            try
+            {
+                int affectedRows = await sqlConnection.ExecuteAsync(commands);
+                this.log.LogInformation("Executed codebook change sql: {sqlCommand}, affected rows {affectedRows}", commands, affectedRows);
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Cannot execute apply changes sql command {commands}";
+                this.log.LogError(errorMessage, exception);
+                throw new Exception(errorMessage);
             }
         }
 
@@ -653,6 +788,16 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
                 }
             }
         }
+
+        public Task UpsertRequestChanges(IEnumerable<RequestChange> requestChanges)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
+        private string GetCommandSetIdentityInsert(string fullTableName, bool turnOn)
+            => $"SET IDENTITY_INSERT {fullTableName} { (turnOn ? "ON" : "OFF") };";
 
         private class TableName
         {

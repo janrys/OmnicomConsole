@@ -78,22 +78,22 @@ namespace AngularCrudApi.Application.Pipeline.Handlers
 
         private Task ImportCommands(string commands)
         {
-            throw new NotImplementedException();
+            return this.codebookRepository.ApplyChanges(commands);
         }
 
         private Task ImportRequestChanges(IEnumerable<RequestChange> requestChanges)
         {
-            throw new NotImplementedException();
+            return this.codebookRepository.UpsertRequestChanges(requestChanges);
         }
 
         private Task ImportRequests(IEnumerable<Request> requests)
         {
-            throw new NotImplementedException();
+            return this.codebookRepository.UpsertRequests(requests, true);
         }
 
         private Task ImportReleases(IEnumerable<Release> releases)
         {
-            throw new NotImplementedException();
+            return this.codebookRepository.UpsertReleases(releases, true);
         }
 
         public async Task<StreamWithName> Handle(ExportPackageCommand request, CancellationToken cancellationToken)
