@@ -21,7 +21,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 {
     public class SqlDatabaseCodebookRepository : ICodebookRepository
     {
-        public const string RDS_TABLE_PREFIX = "CB";
+        private readonly string[] rdsTablePrefixes = new string[] { "CB", "CNFG" };
         private const string ADMIN_CONSOLE_TABLE_PREFIX = "CodebookConsole";
         private const string CONFIGURATION_TABLE_SCHEME = "dbo";
         private const string CONFIGURATION_TABLE_NAME = "CodebookConsoleConfiguration";
@@ -82,7 +82,7 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
 
                 if (!includeRds)
                 {
-                    commandText += $" AND NOT TABLE_NAME like '{RDS_TABLE_PREFIX}%'";
+                    commandText += " " + string.Join(" ", rdsTablePrefixes.Select(p => $"AND NOT TABLE_NAME like '{p}%'"));
                 }
 
                 IEnumerable<TableName> tableNames = await sqlConnection.QueryAsync<TableName>(commandText);
@@ -93,7 +93,9 @@ namespace AngularCrudApi.Infrastructure.Persistence.Repositories
             }
         }
 
-        public static bool IsCodebookEditable(Codebook codebook) => codebook != null && !String.IsNullOrEmpty(codebook.Name) && !codebook.Name.StartsWith(RDS_TABLE_PREFIX);
+        private bool IsCodebookEditable(Codebook codebook)
+            => codebook != null && !String.IsNullOrEmpty(codebook.Name)
+                && !rdsTablePrefixes.Any(p => codebook.Name.StartsWith(p));
 
         public async Task<CodebookDetail> GetByName(string codebookName)
         {
